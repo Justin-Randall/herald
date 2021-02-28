@@ -44,7 +44,10 @@ namespace Herald
 	{
 		std::lock_guard<std::mutex> lock(_loggerMutex);
 		_enabledLogTypes = 0;
+		_logMessageCallbacks.clear();
+		_jsonLogMessageCallbacks.clear();
 	}
+	
 	void enableAbortOnFatal()
 	{
 		std::lock_guard<std::mutex> lock(_loggerMutex);
@@ -69,6 +72,15 @@ namespace Herald
 		                                  _logMessageCallbacks.end(), cb);
 		if (location == _logMessageCallbacks.end())
 			_logMessageCallbacks.push_back(cb);
+	}
+
+	void removeLogMessageCallback(void (*cb)(const std::string &)) {
+		std::lock_guard<std::mutex> lock(_loggerMutex);
+		const auto & location = std::find(_logMessageCallbacks.begin(),
+		                                  _logMessageCallbacks.end(), cb);
+		if(location != _logMessageCallbacks.end()) {
+			_logMessageCallbacks.erase(location);
+		}
 	}
 
 	void logf(LogTypes logType, const char * const format, ...)
