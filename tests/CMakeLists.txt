@@ -25,7 +25,7 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
                  ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
                  EXCLUDE_FROM_ALL)
 
-add_executable(herald_tests "test_log_enable.cpp")
+add_executable(herald_tests "test_herald.cpp")
 
 target_compile_features(herald_tests PRIVATE cxx_std_17)
 
