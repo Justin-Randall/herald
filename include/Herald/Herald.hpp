@@ -75,5 +75,5 @@ namespace Herald
 	void addLogMessageCallback(void (*cb)(const std::string &));
 	void removeLogMessageCallback(void (*cb)(const std::string &));
 
-} // namespace Logger
+} // namespace Herald
 #endif //_INCLUDED_Logger_HPP
