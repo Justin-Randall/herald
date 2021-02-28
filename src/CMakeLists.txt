@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.19)
 
 file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${Herald_SOURCE_DIR}/include/Herald/*.hpp")
 
-add_library(herald_library "Logger.cpp" "LogToStdErr.cpp" ${HEADER_LIST})
+add_library(herald_library "Herald.cpp" "LogToStdErr.cpp" ${HEADER_LIST})
 
 target_include_directories(herald_library PUBLIC ../include)
 

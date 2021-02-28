@@ -1,38 +1,38 @@
-#include "Herald/Logger.hpp"
+#include "Herald/Herald.hpp"
 #include "gtest/gtest.h"
 
 TEST(Herald, Configuration)
 {
-	EXPECT_EQ(Logger::getEnabledLogTypes(), 0);
+	EXPECT_EQ(Herald::getEnabledLogTypes(), 0);
 
-	Logger::enableLogType(Logger::LogTypes::Analysis);
-	EXPECT_TRUE(Logger::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Logger::LogTypes::Analysis));
+	Herald::enableLogType(Herald::LogTypes::Analysis);
+	EXPECT_TRUE(Herald::getEnabledLogTypes() &
+	            static_cast<uint32_t>(Herald::LogTypes::Analysis));
 
-	Logger::enableLogType(Logger::LogTypes::Trace);
-	EXPECT_TRUE(Logger::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Logger::LogTypes::Trace));
+	Herald::enableLogType(Herald::LogTypes::Trace);
+	EXPECT_TRUE(Herald::getEnabledLogTypes() &
+	            static_cast<uint32_t>(Herald::LogTypes::Trace));
 
-	Logger::enableLogType(Logger::LogTypes::Debug);
-	EXPECT_TRUE(Logger::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Logger::LogTypes::Debug));
+	Herald::enableLogType(Herald::LogTypes::Debug);
+	EXPECT_TRUE(Herald::getEnabledLogTypes() &
+	            static_cast<uint32_t>(Herald::LogTypes::Debug));
 
-	Logger::enableLogType(Logger::LogTypes::Info);
-	EXPECT_TRUE(Logger::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Logger::LogTypes::Info));
+	Herald::enableLogType(Herald::LogTypes::Info);
+	EXPECT_TRUE(Herald::getEnabledLogTypes() &
+	            static_cast<uint32_t>(Herald::LogTypes::Info));
 
-	Logger::enableLogType(Logger::LogTypes::Warning);
-	EXPECT_TRUE(Logger::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Logger::LogTypes::Warning));
+	Herald::enableLogType(Herald::LogTypes::Warning);
+	EXPECT_TRUE(Herald::getEnabledLogTypes() &
+	            static_cast<uint32_t>(Herald::LogTypes::Warning));
 
-	Logger::enableLogType(Logger::LogTypes::Error);
-	EXPECT_TRUE(Logger::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Logger::LogTypes::Error));
+	Herald::enableLogType(Herald::LogTypes::Error);
+	EXPECT_TRUE(Herald::getEnabledLogTypes() &
+	            static_cast<uint32_t>(Herald::LogTypes::Error));
 
-	Logger::enableLogType(Logger::LogTypes::Fatal);
-	EXPECT_TRUE(Logger::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Logger::LogTypes::Fatal));
+	Herald::enableLogType(Herald::LogTypes::Fatal);
+	EXPECT_TRUE(Herald::getEnabledLogTypes() &
+	            static_cast<uint32_t>(Herald::LogTypes::Fatal));
 
-	Logger::clearConfiguration();
-	EXPECT_EQ(Logger::getEnabledLogTypes(), 0);
+	Herald::clearConfiguration();
+	EXPECT_EQ(Herald::getEnabledLogTypes(), 0);
 }

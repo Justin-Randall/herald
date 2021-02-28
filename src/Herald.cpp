@@ -1,4 +1,4 @@
-#include "Herald/Logger.hpp"
+#include "Herald/Herald.hpp"
 #include <chrono>
 #include <ctime>
 #include <iomanip>
@@ -8,7 +8,7 @@
 #include <stdarg.h>
 #include <vector>
 
-namespace Logger
+namespace Herald
 {
 	std::mutex _loggerMutex;
 

@@ -22,7 +22,7 @@
 #define LOG_FATAL_FORMAT(x, ...)                                               \
 	Logger::logf(Logger::LogTypes::Fatal, x, __VA_ARGS__);
 
-namespace Logger
+namespace Herald
 {
 	enum struct LogTypes : uint32_t {
 		Analysis = (1 << 0),
