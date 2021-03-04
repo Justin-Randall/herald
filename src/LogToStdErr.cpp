@@ -1,7 +1,7 @@
 #include "Herald/LogToStdErr.hpp"
 #include <iostream>
 
-namespace Logger
+namespace Herald
 {
 	void logToStdErr(const std::string & log) { std::cerr << log; }
-} // namespace Logger
+} // namespace Herald

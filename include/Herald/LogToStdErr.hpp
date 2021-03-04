@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace Logger
+namespace Herald
 {
 	void logToStdErr(const std::string &);
 }

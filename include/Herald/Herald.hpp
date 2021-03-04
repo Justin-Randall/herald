@@ -75,5 +75,14 @@ namespace Herald
 	void removeLogMessageCallback(void (*cb)(const std::string &));
 	void install();
 	void remove();
+
+	// MainLogger
+	// Helper for cases where log entries may come before or after
+	// main(). Instantiate it in file scope for static initialization.
+	struct MainLogger {
+		MainLogger() { Herald::install(); }
+		~MainLogger() { Herald::remove(); }
+	};
+
 } // namespace Herald
 #endif //_INCLUDED_Logger_HPP
