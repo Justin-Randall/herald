@@ -42,8 +42,7 @@ namespace Herald
 		static void log(const LogTypes, const char *);
 	};
 
-	void clearConfiguration();
-
+	void     clearConfiguration();
 	void     enableLogType(LogTypes logType);
 	void     disableLogType(LogTypes logType);
 	void     enableAllLogTypes();
@@ -74,6 +73,7 @@ namespace Herald
 
 	void addLogMessageCallback(void (*cb)(const std::string &));
 	void removeLogMessageCallback(void (*cb)(const std::string &));
-
+	void install();
+	void remove();
 } // namespace Herald
 #endif //_INCLUDED_Logger_HPP

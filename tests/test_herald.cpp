@@ -1,8 +1,12 @@
 #include "Herald/Herald.hpp"
 #include "gtest/gtest.h"
+#include <atomic>
+#include <condition_variable>
+#include <mutex>
 
 TEST(Herald, Configuration)
 {
+	Herald::install();
 	EXPECT_EQ(Herald::getEnabledLogTypes(), 0);
 
 	Herald::enableLogType(Herald::LogTypes::Analysis);
@@ -106,38 +110,56 @@ TEST(Herald, Configuration)
 
 	EXPECT_FALSE(Herald::getEnabledLogTypes() &
 	             static_cast<uint32_t>(Herald::LogTypes::Fatal));
+	Herald::remove();
 }
 
-bool              testCallbackInvoked;
-const std::string testCallbackMessage("testing");
+std::atomic<bool>       testCallbackInvoked;
+const std::string       testCallbackMessage("testing");
+std::mutex              conditionLock;
+std::condition_variable condition;
 
-void testCallback(const std::string & msg) { testCallbackInvoked = true; }
+void testCallback(const std::string & msg)
+{
+	condition.notify_one();
+	testCallbackInvoked = true;
+}
 
 TEST(Herald, Callbacks)
 {
+	Herald::install();
+
 	testCallbackInvoked = false;
 
 	Herald::enableLogType(Herald::LogTypes::Debug);
 
 	Herald::addLogMessageCallback(&testCallback);
 
-	Herald::log(Herald::LogTypes::Debug, testCallbackMessage);
-	EXPECT_TRUE(testCallbackInvoked);
+	{
+		std::unique_lock<std::mutex> l(conditionLock);
+		Herald::log(Herald::LogTypes::Debug, testCallbackMessage);
+		condition.wait(l);
+		EXPECT_TRUE(testCallbackInvoked);
+	}
 	testCallbackInvoked = false;
 
 	Herald::removeLogMessageCallback(&testCallback);
 	Herald::log(Herald::LogTypes::Debug, testCallbackMessage);
 	EXPECT_FALSE(testCallbackInvoked);
+
+	Herald::remove();
 }
 
 std::string lastLogCallbackMessage;
 
 void logCallback(const std::string & message)
 {
+	condition.notify_one();
 	lastLogCallbackMessage = message;
 }
 
-TEST(Herald, Logging) {
+TEST(Herald, Logging)
+{
+	Herald::install();
 	Herald::clearConfiguration();
 
 	Herald::enableAllLogTypes();
@@ -145,14 +167,29 @@ TEST(Herald, Logging) {
 
 	const char * const stringLiteral = "string literal";
 
-	Herald::log(Herald::LogTypes::Debug, stringLiteral);
-	EXPECT_TRUE(lastLogCallbackMessage.find(stringLiteral) != std::string::npos);
+	{
+		std::unique_lock<std::mutex> l(conditionLock);
+		Herald::log(Herald::LogTypes::Debug, stringLiteral);
+		condition.wait(l);
+		EXPECT_TRUE(lastLogCallbackMessage.find(stringLiteral) !=
+		            std::string::npos);
+	}
 
-	const std::string stdString("std::string");
-	Herald::log(Herald::LogTypes::Debug, stdString);
-	EXPECT_TRUE(lastLogCallbackMessage.find(stdString) != std::string::npos);
-
+	{
+		std::unique_lock<std::mutex> l(conditionLock);
+		const std::string            stdString("std::string");
+		Herald::log(Herald::LogTypes::Debug, stdString);
+		condition.wait(l);
+		EXPECT_TRUE(lastLogCallbackMessage.find(stdString) !=
+		            std::string::npos);
+	}
 	int answer = 42;
-	Herald::logf(Herald::LogTypes::Debug, "The answer is %d", answer);
-	EXPECT_TRUE(lastLogCallbackMessage.find("The answer is 42") != std::string::npos);
+	{
+		std::unique_lock<std::mutex> l(conditionLock);
+		Herald::logf(Herald::LogTypes::Debug, "The answer is %d", answer);
+		condition.wait(l);
+		EXPECT_TRUE(lastLogCallbackMessage.find("The answer is 42") !=
+		            std::string::npos);
+	}
+	Herald::remove();
 }
