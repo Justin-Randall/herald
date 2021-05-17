@@ -1,0 +1,3 @@
+[submodule "external/rapidjsoncpp"]
+	path = external/rapidjsoncpp
+	url = git@github.com:Justin-Randall/rapidjsoncpp.git
