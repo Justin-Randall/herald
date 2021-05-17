@@ -113,10 +113,13 @@ TEST(Herald, Configuration)
 	Herald::remove();
 }
 
-std::atomic<bool>       testCallbackInvoked;
-const std::string       testCallbackMessage("testing");
-std::mutex              conditionLock;
-std::condition_variable condition;
+namespace
+{
+	std::atomic<bool>       testCallbackInvoked;
+	const std::string       testCallbackMessage("testing");
+	std::mutex              conditionLock;
+	std::condition_variable condition;
+} // namespace
 
 void testCallback(const std::string & msg)
 {

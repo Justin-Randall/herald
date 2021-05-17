@@ -11,6 +11,9 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 endif()
 
+add_subdirectory(external)
+include_directories("external/rapidjsoncpp/include")
+
 add_subdirectory(src)
 
 add_subdirectory(tests)

@@ -1,8 +1,5 @@
 #include "Herald/Herald.hpp"
 #include <atomic>
-#include <chrono>
-#include <ctime>
-#include <iomanip>
 #include <map>
 #include <mutex>
 #include <queue>
@@ -48,17 +45,13 @@ namespace Herald
 		std::queue<std::pair<LogTypes, std::string>> _logQueue;
 		std::mutex                                   _logQueueMutex;
 		std::thread                                  _logWorker;
+		std::map<std::string, std::string>           _jsonLogHeader;
 	};
 
 	Context * _context = 0;
 
 	std::vector<void (*)(const std::string &)> _logMessageCallbacks;
 	std::vector<void (*)(const std::string &)> _jsonLogMessageCallbacks;
-	const std::map<LogTypes, std::string>      logTypeNames = {
-        {(LogTypes::Analysis), "Analysis"}, {(LogTypes::Debug), "Debug"},
-        {(LogTypes::Info), "Info"},         {(LogTypes::Warning), "Warning"},
-        {(LogTypes::Error), "Error"},       {(LogTypes::Fatal), "Fatal"},
-        {(LogTypes::Trace), "Trace"}};
 
 	uint32_t _enabledLogTypes;
 	bool     _shouldAbortOnFatal(true);
@@ -139,7 +132,7 @@ namespace Herald
 		log(logType, buffer);
 	}
 
-	void LogInternal::log(LogTypes logType, const char * const message)
+	void LogInternal::log(LogTypes logType, const std::string & message)
 	{
 		LOCK();
 
@@ -178,34 +171,8 @@ namespace Herald
 				_context->_logQueue.pop();
 			}
 
-			auto        currentChronoTime = std::chrono::system_clock::now();
-			std::time_t currentTime =
-			    std::chrono::system_clock::to_time_t(currentChronoTime);
-
-			std::chrono::milliseconds currentChronoMs =
-			    std::chrono::duration_cast<std::chrono::milliseconds>(
-			        currentChronoTime.time_since_epoch());
-
-			std::stringstream timeStamp;
-			timeStamp << std::put_time(std::localtime(&currentTime),
-			                           "%Y-%m-%dT%H:%M:%S")
-			          << "." << std::setfill('0') << std::setw(3)
-			          << (currentChronoMs.count() % 1000)
-			          << std::put_time(std::localtime(&currentTime), "%z");
-
-			const auto  f = logTypeNames.find(logType);
-			std::string logTypeName;
-			if (f != logTypeNames.end()) {
-				logTypeName = (*f).second;
-			}
-
 			if (!_logMessageCallbacks.empty()) {
-				static const std::string separator(" : ");
-				std::stringstream        formatted;
-				formatted << timeStamp.str() << separator;
-				if (logTypeName.length() > 0) {
-					formatted << logTypeName << separator;
-				}
+				std::stringstream formatted;
 				formatted << message << std::endl;
 				for (const auto & logSync : _logMessageCallbacks) {
 					logSync(formatted.str());
@@ -230,5 +197,44 @@ namespace Herald
 	{
 		delete _context;
 		_context = nullptr;
+	}
+
+	void setJsonLogHeader(const std::string & key, const std::string & value)
+	{
+		if (nullptr == _context)
+			return;
+
+		_context->_jsonLogHeader[key] = value;
+	}
+
+	void removeJsonLogHeader(const std::string & key)
+	{
+		if (nullptr == _context)
+			return;
+		LOCK();
+		_context->_jsonLogHeader.erase(key);
+	}
+
+	void clearJsonLogHeaders()
+	{
+		if (nullptr == _context)
+			return;
+
+		LOCK();
+		_context->_jsonLogHeader.clear();
+	}
+
+	std::map<std::string, std::string> getJsonLogHeaders()
+	{
+		std::map<std::string, std::string> result;
+
+		if (nullptr == _context)
+			return result;
+
+		{
+			LOCK();
+			result = _context->_jsonLogHeader;
+		}
+		return result;
 	}
 } // namespace Herald

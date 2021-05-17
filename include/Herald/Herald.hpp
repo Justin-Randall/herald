@@ -1,8 +1,13 @@
 #ifndef _INCLUDED_Logger_HPP
 #define _INCLUDED_Logger_HPP
 
+#include <chrono>
+#include <ctime>
+#include <iomanip>
 #include <iostream>
+#include <map>
 #include <stdint.h>
+#include <string>
 
 // helper macros
 #define LOG_TRACE(x) Logger::log(Logger::LogTypes::Trace, x);
@@ -34,12 +39,28 @@ namespace Herald
 		Fatal    = (1 << 6)
 	};
 
+	const std::map<LogTypes, std::string> logTypeNames = {
+	    {(LogTypes::Analysis), "Analysis"}, {(LogTypes::Debug), "Debug"},
+	    {(LogTypes::Info), "Info"},         {(LogTypes::Warning), "Warning"},
+	    {(LogTypes::Error), "Error"},       {(LogTypes::Fatal), "Fatal"},
+	    {(LogTypes::Trace), "Trace"}};
+
 	class LogInternal
 	{
 	  private:
 		LogInternal() = delete;
-		friend void log(const LogTypes, const char *);
-		static void log(const LogTypes, const char *);
+		friend void log(const LogTypes, const std::string &);
+		// template <typename ValueType, typename... JSONPairs>
+		// friend void log_json(const LogTypes      logType,
+		//                      const std::string & logMessage,
+		//                      const std::string & variableName,
+		//                      ValueType & variable, const JSONPairs &...
+		//                      tuples);
+		template <typename ValueType, typename... Args>
+		friend void log_json(const LogTypes & logType, const std::string & msg,
+		                     const std::string & key, const ValueType & value,
+		                     const Args &... args);
+		static void log(const LogTypes, const std::string &);
 	};
 
 	void     clearConfiguration();
@@ -55,10 +76,27 @@ namespace Herald
 	// timesteamp)
 	inline void log(const LogTypes logType, const char * message)
 	{
-		if (!(getEnabledLogTypes() & static_cast<uint32_t>(logType)))
-			return;
+		const std::string msg(message);
+		log(logType, msg);
+	}
 
-		LogInternal::log(logType, message);
+	inline std::string getTimeStamp()
+	{
+		auto        currentChronoTime = std::chrono::system_clock::now();
+		std::time_t currentTime =
+		    std::chrono::system_clock::to_time_t(currentChronoTime);
+
+		std::chrono::milliseconds currentChronoMs =
+		    std::chrono::duration_cast<std::chrono::milliseconds>(
+		        currentChronoTime.time_since_epoch());
+
+		std::stringstream timeStamp;
+		timeStamp << std::put_time(std::localtime(&currentTime),
+		                           "%Y-%m-%dT%H:%M:%S")
+		          << "." << std::setfill('0') << std::setw(3)
+		          << (currentChronoMs.count() % 1000)
+		          << std::put_time(std::localtime(&currentTime), "%z");
+		return timeStamp.str();
 	}
 
 	inline void log(const LogTypes logType, const std::string & message)
@@ -66,7 +104,16 @@ namespace Herald
 		if (!(getEnabledLogTypes() & static_cast<uint32_t>(logType)))
 			return;
 
-		log(logType, message.c_str());
+		const std::string timeStamp = getTimeStamp();
+		const auto        f         = logTypeNames.find(logType);
+		std::string       logTypeName;
+		if (f != logTypeNames.end()) {
+			logTypeName = (*f).second;
+		}
+		static const std::string separator(" : ");
+
+		LogInternal::log(logType, timeStamp + separator + logTypeName +
+		                              separator + message);
 	}
 
 	void logf(const LogTypes logType, const char * const format, ...);
@@ -75,6 +122,14 @@ namespace Herald
 	void removeLogMessageCallback(void (*cb)(const std::string &));
 	void install();
 	void remove();
+	void setJsonLogHeader(const std::string & key, const std::string & value);
+	void removeJsonLogHeader(const std::string & key);
+	void clearJsonLogHeaders();
+
+	// should be used internally. Returns copy by value for thread safety.
+	std::map<std::string, std::string> getJsonLogHeaders();
+
+	std::string getTimeStamp();
 
 	// MainLogger
 	// Helper for cases where log entries may come before or after

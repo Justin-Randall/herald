@@ -25,13 +25,13 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
                  ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
                  EXCLUDE_FROM_ALL)
 
-add_executable(herald_tests "test_herald.cpp")
+add_executable(herald_tests "test_herald.cpp" "test_json.cpp")
 
 target_compile_features(herald_tests PRIVATE cxx_std_17)
 
 target_link_libraries(herald_tests PRIVATE gtest_main herald_library)
 
-add_test(NAME test_herald COMMAND herald_tests)
+add_test(NAME test_herald COMMAND "opencppcoverage herald_tests")
 
 include_directories("${gtest_SOURCE_DIR}/include"
     "${Herald_SOURCE_DIR}/include/Herald/*.hpp"
