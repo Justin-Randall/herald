@@ -70,6 +70,8 @@ namespace Herald
 	uint32_t getEnabledLogTypes();
 	void     disableAbortOnFatal();
 	void     enableAbortOnFatal();
+	bool     shouldAbortOnFatal();
+	void     remove();
 
 	// Contains everything already (either json serialized, or just a raw
 	// log message that needs to be encapsulated in a json log entry with a
@@ -121,7 +123,6 @@ namespace Herald
 	void addLogMessageCallback(void (*cb)(const std::string &));
 	void removeLogMessageCallback(void (*cb)(const std::string &));
 	void install();
-	void remove();
 	void setJsonLogHeader(const std::string & key, const std::string & value);
 	void removeJsonLogHeader(const std::string & key);
 	void clearJsonLogHeaders();

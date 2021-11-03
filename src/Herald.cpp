@@ -91,6 +91,8 @@ namespace Herald
 		LOCK();
 		_shouldAbortOnFatal = false;
 	}
+
+	bool     shouldAbortOnFatal() { return _shouldAbortOnFatal; }
 	uint32_t getEnabledLogTypes()
 	{
 		LOCK();
@@ -134,17 +136,24 @@ namespace Herald
 
 	void LogInternal::log(LogTypes logType, const std::string & message)
 	{
-		LOCK();
-
-		if (_logMessageCallbacks.empty() && _jsonLogMessageCallbacks.empty())
-			return;
-
 		{
-			std::lock_guard<std::mutex> queueLock(_context->_logQueueMutex);
-			_context->_logQueue.push(
-			    std::make_pair(logType, std::string(message)));
+			LOCK();
+
+			if (_logMessageCallbacks.empty() &&
+			    _jsonLogMessageCallbacks.empty())
+				return;
+
+			{
+				std::lock_guard<std::mutex> queueLock(_context->_logQueueMutex);
+				_context->_logQueue.push(
+				    std::make_pair(logType, std::string(message)));
+			}
+			_context->_logThreadConditionVariable.notify_one();
 		}
-		_context->_logThreadConditionVariable.notify_one();
+		if (logType == LogTypes::Fatal && shouldAbortOnFatal()) {
+			Herald::remove();
+			abort();
+		}
 	}
 
 	void logWorker()
@@ -177,10 +186,6 @@ namespace Herald
 				for (const auto & logSync : _logMessageCallbacks) {
 					logSync(formatted.str());
 				}
-			}
-
-			if (logType == LogTypes::Fatal && _shouldAbortOnFatal) {
-				abort();
 			}
 		}
 	}
