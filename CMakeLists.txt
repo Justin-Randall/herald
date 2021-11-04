@@ -17,7 +17,7 @@ include(FetchContent)
 FetchContent_Declare(
     rapidjsoncpp
     GIT_REPOSITORY git@github.com:Justin-Randall/rapidjsoncpp.git
-    GIT_TAG        156489c7803b402f4f32fb14790123167acc2fa1 # release-1.10.0
+    GIT_TAG origin/main
 )
 FetchContent_MakeAvailable(rapidjsoncpp)
 
