@@ -139,20 +139,21 @@ namespace Herald
 		{
 			LOCK();
 
-			if (_logMessageCallbacks.empty() &&
-			    _jsonLogMessageCallbacks.empty())
-				return;
+			if (!_logMessageCallbacks.empty() ||
+			    !_jsonLogMessageCallbacks.empty()) {
 
-			{
-				std::lock_guard<std::mutex> queueLock(_context->_logQueueMutex);
-				_context->_logQueue.push(
-				    std::make_pair(logType, std::string(message)));
+				{
+					std::lock_guard<std::mutex> queueLock(
+					    _context->_logQueueMutex);
+					_context->_logQueue.push(
+					    std::make_pair(logType, std::string(message)));
+				}
+				_context->_logThreadConditionVariable.notify_one();
 			}
-			_context->_logThreadConditionVariable.notify_one();
 		}
 		if (logType == LogTypes::Fatal && shouldAbortOnFatal()) {
 			Herald::remove();
-			abort();
+			throw std::runtime_error(message);
 		}
 	}
 
@@ -193,7 +194,7 @@ namespace Herald
 	void install()
 	{
 		if (nullptr != _context) {
-			abort();
+			throw std::runtime_error("install invoked twice");
 		}
 		_context = new Context();
 	}

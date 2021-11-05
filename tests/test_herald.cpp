@@ -119,6 +119,7 @@ namespace
 	const std::string       testCallbackMessage("testing");
 	std::mutex              conditionLock;
 	std::condition_variable condition;
+	std::mutex              testLock;
 } // namespace
 
 void testCallback(const std::string & msg)
@@ -194,5 +195,53 @@ TEST(Herald, Logging)
 		EXPECT_TRUE(lastLogCallbackMessage.find("The answer is 42") !=
 		            std::string::npos);
 	}
+	Herald::remove();
+}
+
+TEST(Herald, FatalErrorHandlingThrows)
+{
+	Herald::install();
+	Herald::enableAbortOnFatal();
+	Herald::enableLogType(Herald::LogTypes::Fatal);
+	bool fatalErrorThrows = false;
+	try {
+		Herald::log(Herald::LogTypes::Fatal, "Fatal!");
+	} catch (std::runtime_error) {
+		fatalErrorThrows = true;
+	}
+	EXPECT_TRUE(fatalErrorThrows);
+}
+
+TEST(Herald, FatalErrorHandlingNoThrow)
+{
+	Herald::install();
+	Herald::disableAbortOnFatal();
+	Herald::enableLogType(Herald::LogTypes::Fatal);
+	bool fatalErrorThrows = false;
+
+	fatalErrorThrows = false;
+	Herald::log(Herald::LogTypes::Fatal, "Fatal!");
+	EXPECT_FALSE(fatalErrorThrows);
+	Herald::remove();
+}
+
+TEST(Herald, LogFormatDoesNotLogWhenLogTypeDisabled)
+{
+	Herald::install();
+	Herald::disableLogType(Herald::LogTypes::Debug);
+	Herald::logf(Herald::LogTypes::Debug, "LogFormat Ignored!");
+	Herald::remove();
+}
+
+TEST(Herald, DoubleInstallThrows)
+{
+	Herald::install();
+	bool installThrows = false;
+	try {
+		Herald::install();
+	} catch (std::runtime_error) {
+		installThrows = true;
+	}
+	EXPECT_TRUE(installThrows);
 	Herald::remove();
 }
