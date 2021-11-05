@@ -233,6 +233,14 @@ TEST(Herald, LogFormatDoesNotLogWhenLogTypeDisabled)
 	Herald::remove();
 }
 
+TEST(Herald, LogMessageDoesNotLogWhenLogTypeDisabled)
+{
+	Herald::install();
+	Herald::disableLogType(Herald::LogTypes::Debug);
+	Herald::log(Herald::LogTypes::Debug, std::string("LogFormat Ignored!"));
+	Herald::remove();
+}
+
 TEST(Herald, DoubleInstallThrows)
 {
 	Herald::install();

@@ -92,12 +92,22 @@ namespace Herald
 		    std::chrono::duration_cast<std::chrono::milliseconds>(
 		        currentChronoTime.time_since_epoch());
 
+		std::tm tm;
+#if defined(__unix__)
+		localtime_r(&currentTime, &tm);
+#elif defined(_MSC_VER)
+		localtime_s(&tm, &currentTime);
+#else
+		static std::mutex           mtx;
+		std::lock_guard<std::mutex> lock(mtx);
+		tm = *std::localtime(&timer);
+#endif
+
 		std::stringstream timeStamp;
-		timeStamp << std::put_time(std::localtime(&currentTime),
-		                           "%Y-%m-%dT%H:%M:%S")
-		          << "." << std::setfill('0') << std::setw(3)
+		timeStamp << std::put_time(&tm, "%Y-%m-%dT%H:%M:%S") << "."
+		          << std::setfill('0') << std::setw(3)
 		          << (currentChronoMs.count() % 1000)
-		          << std::put_time(std::localtime(&currentTime), "%z");
+		          << std::put_time(&tm, "%z");
 		return timeStamp.str();
 	}
 
