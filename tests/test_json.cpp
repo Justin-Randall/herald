@@ -16,9 +16,9 @@ namespace
 
 	void logCallback(const std::string & message)
 	{
-		condition.notify_one();
 		lastLogCallbackMessage = message;
 		std::cout << message;
+		condition.notify_one();
 	}
 
 	void waitForLogMessage()
