@@ -76,11 +76,11 @@ namespace Herald
 	// Contains everything already (either json serialized, or just a raw
 	// log message that needs to be encapsulated in a json log entry with a
 	// timesteamp)
-	inline void log(const LogTypes logType, const char * message)
-	{
-		const std::string msg(message);
-		log(logType, msg);
-	}
+	// inline void log(const LogTypes logType, const char * message)
+	// {
+	// 	const std::string msg(message);
+	// 	log(logType, msg);
+	// }
 
 	inline std::string getTimeStamp()
 	{
