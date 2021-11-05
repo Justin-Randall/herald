@@ -1,4 +1,5 @@
 #include "Herald/Herald.hpp"
+#include <algorithm>
 #include <atomic>
 #include <condition_variable>
 #include <map>
