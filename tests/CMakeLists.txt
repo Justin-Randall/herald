@@ -11,13 +11,14 @@ if(NOT DEFINED HERALD_DISABLE_TESTING)
   )
   FetchContent_MakeAvailable(googletest)
 
-  add_executable(herald_tests "test_herald.cpp" "test_json.cpp")
+  set(UNIT_TEST ${PROJECT_NAME}_tests)
 
-  target_compile_features(herald_tests PRIVATE cxx_std_20)
+  add_executable(${UNIT_TEST} "test_herald.cpp" "test_json.cpp")
 
-  target_link_libraries(herald_tests PRIVATE gtest_main herald_library rapidjsoncpp)
+  target_compile_features(${UNIT_TEST} PRIVATE cxx_std_20)
 
-  set(UNIT_TEST herald_tests)
+  target_link_libraries(${UNIT_TEST} PRIVATE gtest_main ${PROJECT_NAME} rapidjsoncpp)
+
   add_test(NAME ${UNIT_TEST} COMMAND ${UNIT_TEST})
 
   include_directories("${gtest_SOURCE_DIR}/include"
