@@ -11,7 +11,7 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(herald_tests "test_herald.cpp" "test_json.cpp")
 
-target_compile_features(herald_tests PRIVATE cxx_std_17)
+target_compile_features(herald_tests PRIVATE cxx_std_20)
 
 target_link_libraries(herald_tests PRIVATE gtest_main herald_library rapidjsoncpp)
 
@@ -33,7 +33,7 @@ if(OpenCppCoverage_BINARY)
     COMMENT "Run coverage report"
     POST_BUILD 
     WORKING_DIRECTORY ${CMAKE_TEST_DIRECTORY}
-    COMMAND OpenCppCoverage.exe --quiet --export_type cobertura:${CMAKE_SOURCE_DIR}/build/coverage.xml --cover_children --sources herald --excluded_modules system32 --excluded_sources build\\_deps --excluded_sources googletest\\include\\gtest -- ctest -j10 -C Debug -T test --output-on-failure
+    COMMAND ${OpenCppCoverage_BINARY} --quiet --export_type cobertura:${CMAKE_SOURCE_DIR}/build/coverage.xml --cover_children --sources herald --excluded_modules system32 --excluded_sources build\\_deps --excluded_sources googletest\\include\\gtest -- ctest -j10 -C $<CONFIGURATION> -T test --output-on-failure
   )
 else()
   add_custom_command(
