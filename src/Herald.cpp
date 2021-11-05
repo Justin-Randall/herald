@@ -1,10 +1,12 @@
 #include "Herald/Herald.hpp"
 #include <atomic>
+#include <condition_variable>
 #include <map>
 #include <mutex>
 #include <queue>
 #include <sstream>
 #include <stdarg.h>
+#include <thread>
 #include <vector>
 
 namespace Herald
