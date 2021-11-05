@@ -124,8 +124,8 @@ namespace
 
 void testCallback(const std::string & msg)
 {
-	condition.notify_one();
 	testCallbackInvoked = true;
+	condition.notify_one();
 }
 
 TEST(Herald, Callbacks)
