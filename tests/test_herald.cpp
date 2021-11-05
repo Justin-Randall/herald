@@ -233,15 +233,15 @@ TEST(Herald, LogFormatDoesNotLogWhenLogTypeDisabled)
 	Herald::remove();
 }
 
-// TEST(Herald, DoubleInstallThrows)
-// {
-// 	Herald::install();
-// 	bool installThrows = false;
-// 	try {
-// 		Herald::install();
-// 	} catch (std::runtime_error) {
-// 		installThrows = true;
-// 	}
-// 	EXPECT_TRUE(installThrows);
-// 	Herald::remove();
-// }
+TEST(Herald, DoubleInstallThrows)
+{
+	Herald::install();
+	bool installThrows = false;
+	try {
+		Herald::install();
+	} catch (std::runtime_error) {
+		installThrows = true;
+	}
+	EXPECT_TRUE(installThrows);
+	Herald::remove();
+}

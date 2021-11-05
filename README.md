@@ -1,3 +1,5 @@
+![CMake workflow](https://github.com/Justin-Randall/herald/actions/workflows/cmake.yml/badge.svg)
+
 # Herald
 
 A multi-purpose C++ logging library with support for json-encoded

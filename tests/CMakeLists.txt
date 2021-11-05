@@ -27,20 +27,21 @@ include_directories("${gtest_SOURCE_DIR}/include"
 
 find_program(OpenCppCoverage_BINARY OpenCppCoverage.exe)
 
-# if(OpenCppCoverage_BINARY)
-#   add_custom_command(
-#     TARGET ${UNIT_TEST}
-#     COMMENT "Run coverage report"
-#     POST_BUILD 
-#     WORKING_DIRECTORY ${CMAKE_TEST_DIRECTORY}
-#     COMMAND ${OpenCppCoverage_BINARY} --quiet --export_type cobertura:${CMAKE_SOURCE_DIR}/build/coverage.xml --cover_children --sources herald --excluded_modules system32 --excluded_sources build\\_deps --excluded_sources googletest\\include\\gtest -- ctest -j 1 -C $<CONFIGURATION> -T test --output-on-failure
-#   )
-# else()
+set(TEST_COMMAND_OPTIONS ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -R "^${UNIT_TEST}$" --output-on-failures)
+if(OpenCppCoverage_BINARY)
+  add_custom_command(
+    TARGET ${UNIT_TEST}
+    COMMENT "Run coverage report and tests"
+    POST_BUILD 
+    WORKING_DIRECTORY ${CMAKE_TEST_DIRECTORY}
+    COMMAND ${OpenCppCoverage_BINARY} --quiet --export_type cobertura:${CMAKE_SOURCE_DIR}/build/coverage.xml --cover_children --sources herald --excluded_modules system32 --excluded_sources build\\_deps --excluded_sources googletest\\include\\gtest -- ${TEST_COMMAND_OPTIONS}
+    )
+else()
   add_custom_command(
     TARGET ${UNIT_TEST}
     COMMENT "Run tests"
     POST_BUILD 
     WORKING_DIRECTORY ${CMAKE_TEST_DIRECTORY}
-    COMMAND ${CMAKE_CTEST_COMMAND} --debug -C $<CONFIGURATION> -R "^${UNIT_TEST}$" --output-on-failures
+    COMMAND ${TEST_COMMAND_OPTIONS}
   )
-# endif()
+endif()
