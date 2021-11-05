@@ -30,9 +30,19 @@ namespace
 
 TEST(HeraldJSON, VerifySeralizationTypes)
 {
+	Herald::setJsonLogHeader("ignored", "header");
+	Herald::removeJsonLogHeader("ignored");
+	const auto headers = Herald::getJsonLogHeaders();
+	EXPECT_TRUE(headers.empty());
+
+	Herald::clearJsonLogHeaders(); // for coverage
 	Herald::install();
+	Herald::clearJsonLogHeaders(); // for coverage
 	Herald::setJsonLogHeader("userId", "test user");
 	Herald::setJsonLogHeader("hostName", "test machine");
+
+	Herald::setJsonLogHeader("remove", "me");
+	Herald::removeJsonLogHeader("remove");
 
 	Herald::addLogMessageCallback(&logCallback);
 
