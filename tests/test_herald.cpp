@@ -157,8 +157,8 @@ std::string lastLogCallbackMessage;
 
 void logCallback(const std::string & message)
 {
-	condition.notify_one();
 	lastLogCallbackMessage = message;
+	condition.notify_one();
 }
 
 TEST(Herald, Logging)
