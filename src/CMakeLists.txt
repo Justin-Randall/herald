@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.11)
 
 file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${Herald_SOURCE_DIR}/include/Herald/*.hpp")
 
