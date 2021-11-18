@@ -1,8 +1,11 @@
 #include "Herald/Herald.hpp"
+#include "Herald/LogToStdErr.hpp"
 #include "gtest/gtest.h"
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <mutex>
+#include <thread>
 
 TEST(Herald, Configuration)
 {
@@ -251,5 +254,20 @@ TEST(Herald, DoubleInstallThrows)
 		installThrows = true;
 	}
 	EXPECT_TRUE(installThrows);
+	Herald::remove();
+}
+
+void slowLogCallback(const std::string &)
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds(1));
+}
+
+TEST(Herald, NoRaceWhenLoggingAndShuttingDown)
+{
+	Herald::install();
+	Herald::enableAbortOnFatal();
+	Herald::enableAllLogTypes();
+	Herald::addLogMessageCallback(slowLogCallback);
+	Herald::log(Herald::LogTypes::Error, "oops");
 	Herald::remove();
 }

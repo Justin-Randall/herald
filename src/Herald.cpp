@@ -31,15 +31,18 @@ namespace Herald
 		    , _logThreadConditionVariableMutex()
 		    , _logQueue()
 		    , _logQueueMutex()
-		    , _logWorker(logWorker)
+		    , _logWorker(nullptr)
 		{
 		}
 		~Context()
 		{
 			_done = true;
 			_logThreadConditionVariable.notify_one();
-			_logWorker.join();
+			_logWorker->join();
+			delete _logWorker;
 		}
+
+		void startWorker() { _logWorker = new std::thread(logWorker); }
 		std::atomic<bool> _done;
 		// std::atomic<bool>       _workerReady;
 		std::mutex              _loggerMutex;
@@ -47,7 +50,7 @@ namespace Herald
 		std::mutex              _logThreadConditionVariableMutex;
 		std::queue<std::pair<LogTypes, std::string>> _logQueue;
 		std::mutex                                   _logQueueMutex;
-		std::thread                                  _logWorker;
+		std::thread *                                _logWorker;
 		std::map<std::string, std::string>           _jsonLogHeader;
 	};
 
@@ -200,6 +203,7 @@ namespace Herald
 			throw std::runtime_error("install invoked twice");
 		}
 		_context = new Context();
+		_context->startWorker();
 	}
 
 	void remove()

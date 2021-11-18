@@ -76,6 +76,9 @@
         "clocale": "cpp",
         "regex": "cpp",
         "stop_token": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "*.tcc": "cpp",
+        "cwctype": "cpp",
+        "string_view": "cpp"
     }
 }
