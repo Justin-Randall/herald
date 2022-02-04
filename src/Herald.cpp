@@ -158,7 +158,6 @@ namespace Herald
 			}
 		}
 		if (logType == LogTypes::Fatal && shouldAbortOnFatal()) {
-			Herald::remove();
 			throw std::runtime_error(message);
 		}
 	}
@@ -199,6 +198,7 @@ namespace Herald
 
 	void install()
 	{
+		remove();
 		if (nullptr != _context) {
 			throw std::runtime_error("install invoked twice");
 		}

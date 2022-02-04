@@ -244,19 +244,6 @@ TEST(Herald, LogMessageDoesNotLogWhenLogTypeDisabled)
 	Herald::remove();
 }
 
-TEST(Herald, DoubleInstallThrows)
-{
-	Herald::install();
-	bool installThrows = false;
-	try {
-		Herald::install();
-	} catch (std::runtime_error) {
-		installThrows = true;
-	}
-	EXPECT_TRUE(installThrows);
-	Herald::remove();
-}
-
 void slowLogCallback(const std::string &)
 {
 	std::this_thread::sleep_for(std::chrono::milliseconds(1));
