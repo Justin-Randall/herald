@@ -70,7 +70,7 @@ std::filesystem::path tempFile()
 		std::filesystem::remove(tempPath);
 	}
 	return tempPath;
-}
+} // LCOV_EXCL_LINE (false negative when using lcov)
 
 TEST(FileLogWriter, writeToFile)
 {
