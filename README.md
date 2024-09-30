@@ -8,7 +8,7 @@ It currently includes simple line and json tranformers with additional formattin
 
 Typical usage calls a static "Herald::log()" function that either takes a pointer to the ILogTransformer interface, a LogLevel and a message, or those 3 plus any number of key-value pairs to include with the log. The transformed log output is then delivered to all attached Writer's and writer callback objects. Multiple writers may be attached to the transformer. For example a JSON transformer logging to stderr, a file and perhaps a custom HTTP writer that the well-formed JSON object to ElasticSearch.
 
-A basic FileLogWriter is included with a worker thread to decouple file I/O from loglines. It will batch as it can for moments when an extraordinary about of log messages are produced, but during which the logging thread should not be blocked on I/O. 
+A basic FileLogWriter is included with a worker thread to decouple file I/O from loglines. It will batch as it can for moments when an extraordinary amount of log messages are produced, but during which the logging thread should not be blocked on I/O. 
 
 ## Usage:
 
