@@ -25,7 +25,8 @@ namespace Herald
 		callbacks.erase(std::remove_if(callbacks.begin(), callbacks.end(),
 		                               [&](const auto & cb) {
 			                               return cb.target_type() == callback.target_type() &&
-			                                      cb.target<void(const std::string &)>() == callback.target<void(const std::string &)>();
+			                                      cb.template target<void(const std::string &)>() ==
+			                                          callback.template target<void(const std::string &)>();
 		                               }),
 		                callbacks.end());
 	}
