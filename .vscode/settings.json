@@ -79,6 +79,14 @@
         "typeindex": "cpp",
         "*.tcc": "cpp",
         "cwctype": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "format": "cpp",
+        "ranges": "cpp",
+        "charconv": "cpp",
+        "codecvt": "cpp",
+        "numeric": "cpp",
+        "span": "cpp",
+        "stack": "cpp",
+        "filesystem": "cpp"
     }
 }

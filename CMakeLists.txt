@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 3.11)
+# Copyright 2016-2024 Playscale Ptd Ltd and Justin Randall
+# MIT License, see LICENSE file for full details.
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+cmake_minimum_required(VERSION 3.19)
 
 project(herald LANGUAGES CXX)
 
-#setup testing
-include (CTest)
+# setup testing
+include(CTest)
 
 enable_testing()
 
@@ -19,7 +19,7 @@ set(JSONCPP_DISABLE_TESTING true)
 include(FetchContent)
 FetchContent_Declare(
     rapidjsoncpp
-    GIT_REPOSITORY https://github.com/Justin-Randall/rapidjsoncpp.git
+    GIT_REPOSITORY git@github.com:Justin-Randall/rapidjsoncpp.git
     GIT_TAG origin/main
 )
 FetchContent_MakeAvailable(rapidjsoncpp)
@@ -27,6 +27,7 @@ FetchContent_MakeAvailable(rapidjsoncpp)
 include_directories("${gtest_SOURCE_DIR}/include"
     "${Herald_SOURCE_DIR}/include/Herald/*.hpp"
     "${rapidjsoncpp_SOURCE_DIR}/include"
+    "${RapidJSON_SOURCE_DIR}/include"
 )
 
 add_subdirectory(src)

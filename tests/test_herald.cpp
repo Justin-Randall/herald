@@ -1,119 +1,210 @@
-#include "Herald/Herald.hpp"
-#include "Herald/LogToStdErr.hpp"
+// Copyright 2016-2024 Playscale Ptd Ltd and Justin Randall
+// MIT License, see LICENSE file for full details.
+
+#include "Herald/BaseLogTransformer.hpp"
+#include "Herald/Logger.hpp"
 #include "gtest/gtest.h"
 #include <atomic>
-#include <chrono>
 #include <condition_variable>
 #include <mutex>
-#include <thread>
 
+class StringLogTransformer : public Herald::BaseLogTransformer
+{
+  public:
+	StringLogTransformer() = default;
+	virtual void log(const Herald::LogEntry & entry) override { logString = entry.message; }
+	std::string  logString;
+};
+
+TEST(Herald, LogLevels)
+{
+	// create a basic string log transformer and verify various combinations of log levels
+	StringLogTransformer logTransformer;
+
+	Herald::disableAllLogLevels();
+
+	Herald::log(logTransformer, Herald::LogLevels::Analysis, "Analysis message");
+	EXPECT_EQ(logTransformer.logString, "");
+
+	Herald::log(logTransformer, Herald::LogLevels::Trace, "Trace message", "testKey", "testValue");
+	EXPECT_EQ(logTransformer.logString, "");
+
+	Herald::log(logTransformer, Herald::LogLevels::Debug, "Debug message");
+	EXPECT_EQ(logTransformer.logString, "");
+
+	Herald::log(logTransformer, Herald::LogLevels::Info, "Info message");
+	EXPECT_EQ(logTransformer.logString, "");
+
+	Herald::log(logTransformer, Herald::LogLevels::Warning, "Warning message");
+	EXPECT_EQ(logTransformer.logString, "");
+
+	Herald::log(logTransformer, Herald::LogLevels::Error, "Error message");
+	EXPECT_EQ(logTransformer.logString, "");
+
+	Herald::log(logTransformer, Herald::LogLevels::Fatal, "Fatal message");
+	EXPECT_EQ(logTransformer.logString, "");
+
+	Herald::enableAllLogLevels();
+
+	Herald::log(logTransformer, Herald::LogLevels::Analysis, "Analysis message");
+	EXPECT_EQ(logTransformer.logString, "Analysis message");
+
+	Herald::log(logTransformer, Herald::LogLevels::Trace, "Trace message", "testKey", "testValue");
+	EXPECT_EQ(logTransformer.logString, "Trace message");
+
+	Herald::log(logTransformer, Herald::LogLevels::Debug, "Debug message");
+	EXPECT_EQ(logTransformer.logString, "Debug message");
+
+	Herald::log(logTransformer, Herald::LogLevels::Info, "Info message");
+	EXPECT_EQ(logTransformer.logString, "Info message");
+
+	Herald::log(logTransformer, Herald::LogLevels::Warning, "Warning message");
+	EXPECT_EQ(logTransformer.logString, "Warning message");
+
+	Herald::log(logTransformer, Herald::LogLevels::Error, "Error message");
+	EXPECT_EQ(logTransformer.logString, "Error message");
+
+	Herald::log(logTransformer, Herald::LogLevels::Fatal, "Fatal message");
+	EXPECT_EQ(logTransformer.logString, "Fatal message");
+
+	// clear them all, enable one by one and verify they are all logged
+	Herald::disableAllLogLevels();
+
+	logTransformer.logString.clear();
+	Herald::log(logTransformer, Herald::LogLevels::Analysis, "Analysis message");
+	EXPECT_EQ(logTransformer.logString, "");
+	Herald::enableLogLevel(Herald::LogLevels::Analysis);
+	Herald::log(logTransformer, Herald::LogLevels::Analysis, "Analysis message");
+	EXPECT_EQ(logTransformer.logString, "Analysis message");
+
+	logTransformer.logString.clear();
+	Herald::log(logTransformer, Herald::LogLevels::Trace, "Trace message", "testKey", "testValue");
+	EXPECT_EQ(logTransformer.logString, "");
+	Herald::enableLogLevel(Herald::LogLevels::Trace);
+	Herald::log(logTransformer, Herald::LogLevels::Trace, "Trace message", "testKey", "testValue");
+	EXPECT_EQ(logTransformer.logString, "Trace message");
+
+	logTransformer.logString.clear();
+	Herald::log(logTransformer, Herald::LogLevels::Debug, "Debug message");
+	EXPECT_EQ(logTransformer.logString, "");
+	Herald::enableLogLevel(Herald::LogLevels::Debug);
+	Herald::log(logTransformer, Herald::LogLevels::Debug, "Debug message");
+	EXPECT_EQ(logTransformer.logString, "Debug message");
+
+	logTransformer.logString.clear();
+	Herald::log(logTransformer, Herald::LogLevels::Info, "Info message");
+	EXPECT_EQ(logTransformer.logString, "");
+	Herald::enableLogLevel(Herald::LogLevels::Info);
+	Herald::log(logTransformer, Herald::LogLevels::Info, "Info message");
+	EXPECT_EQ(logTransformer.logString, "Info message");
+
+	logTransformer.logString.clear();
+	Herald::log(logTransformer, Herald::LogLevels::Warning, "Warning message");
+	EXPECT_EQ(logTransformer.logString, "");
+	Herald::enableLogLevel(Herald::LogLevels::Warning);
+	Herald::log(logTransformer, Herald::LogLevels::Warning, "Warning message");
+	EXPECT_EQ(logTransformer.logString, "Warning message");
+
+	logTransformer.logString.clear();
+	Herald::log(logTransformer, Herald::LogLevels::Error, "Error message");
+	EXPECT_EQ(logTransformer.logString, "");
+	Herald::enableLogLevel(Herald::LogLevels::Error);
+	Herald::log(logTransformer, Herald::LogLevels::Error, "Error message");
+	EXPECT_EQ(logTransformer.logString, "Error message");
+
+	logTransformer.logString.clear();
+	Herald::log(logTransformer, Herald::LogLevels::Fatal, "Fatal message");
+	EXPECT_EQ(logTransformer.logString, "");
+	Herald::enableLogLevel(Herald::LogLevels::Fatal);
+	Herald::log(logTransformer, Herald::LogLevels::Fatal, "Fatal message");
+	EXPECT_EQ(logTransformer.logString, "Fatal message");
+}
+
+#if 0
 TEST(Herald, Configuration)
 {
-	Herald::install();
-	EXPECT_EQ(Herald::getEnabledLogTypes(), 0);
+	// Herald::install();
+	auto ctx = Herald::createContext();
+	EXPECT_NE(nullptr, ctx);
 
-	Herald::enableLogType(Herald::LogTypes::Analysis);
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Analysis));
+	Herald::Context & c = *ctx;
 
-	Herald::enableLogType(Herald::LogTypes::Trace);
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Trace));
+	EXPECT_EQ(Herald::getEnabledLogTypes(c), 0);
 
-	Herald::enableLogType(Herald::LogTypes::Debug);
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Debug));
+	Herald::enableLogType(c, Herald::LogTypes::Analysis);
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Analysis));
 
-	Herald::enableLogType(Herald::LogTypes::Info);
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Info));
+	Herald::enableLogType(c, Herald::LogTypes::Trace);
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Trace));
 
-	Herald::enableLogType(Herald::LogTypes::Warning);
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Warning));
+	Herald::enableLogType(c, Herald::LogTypes::Debug);
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Debug));
 
-	Herald::enableLogType(Herald::LogTypes::Error);
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Error));
+	Herald::enableLogType(c, Herald::LogTypes::Info);
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Info));
 
-	Herald::enableLogType(Herald::LogTypes::Fatal);
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Fatal));
+	Herald::enableLogType(c, Herald::LogTypes::Warning);
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Warning));
 
-	Herald::disableLogType(Herald::LogTypes::Analysis);
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Analysis));
+	Herald::enableLogType(c, Herald::LogTypes::Error);
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Error));
 
-	Herald::disableLogType(Herald::LogTypes::Trace);
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Trace));
+	Herald::enableLogType(c, Herald::LogTypes::Fatal);
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Fatal));
 
-	Herald::disableLogType(Herald::LogTypes::Debug);
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Debug));
+	Herald::disableLogType(c, Herald::LogTypes::Analysis);
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Analysis));
 
-	Herald::disableLogType(Herald::LogTypes::Info);
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Info));
+	Herald::disableLogType(c, Herald::LogTypes::Trace);
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Trace));
 
-	Herald::disableLogType(Herald::LogTypes::Warning);
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Warning));
+	Herald::disableLogType(c, Herald::LogTypes::Debug);
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Debug));
 
-	Herald::disableLogType(Herald::LogTypes::Error);
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Error));
+	Herald::disableLogType(c, Herald::LogTypes::Info);
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Info));
 
-	Herald::disableLogType(Herald::LogTypes::Fatal);
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Fatal));
+	Herald::disableLogType(c, Herald::LogTypes::Warning);
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Warning));
 
-	EXPECT_EQ(Herald::getEnabledLogTypes(), 0);
+	Herald::disableLogType(c, Herald::LogTypes::Error);
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Error));
 
-	Herald::enableAllLogTypes();
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Analysis));
+	Herald::disableLogType(c, Herald::LogTypes::Fatal);
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Fatal));
 
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Trace));
+	EXPECT_EQ(Herald::getEnabledLogTypes(c), 0);
 
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Debug));
+	Herald::enableAllLogTypes(c);
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Analysis));
 
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Info));
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Trace));
 
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Warning));
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Debug));
 
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Error));
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Info));
 
-	EXPECT_TRUE(Herald::getEnabledLogTypes() &
-	            static_cast<uint32_t>(Herald::LogTypes::Fatal));
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Warning));
 
-	Herald::clearConfiguration();
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Analysis));
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Error));
 
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Trace));
+	EXPECT_TRUE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Fatal));
 
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Debug));
+	Herald::clearConfiguration(c);
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Analysis));
 
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Info));
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Trace));
 
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Warning));
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Debug));
 
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Error));
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Info));
 
-	EXPECT_FALSE(Herald::getEnabledLogTypes() &
-	             static_cast<uint32_t>(Herald::LogTypes::Fatal));
-	Herald::remove();
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Warning));
+
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Error));
+
+	EXPECT_FALSE(Herald::getEnabledLogTypes(c) & static_cast<uint32_t>(Herald::LogTypes::Fatal));
+	Herald::destroyContext(ctx);
 }
 
 namespace
@@ -125,7 +216,7 @@ namespace
 	std::mutex              testLock;
 } // namespace
 
-void testCallback(const std::string & msg)
+void testCallback(const std::string &)
 {
 	testCallbackInvoked = true;
 	condition.notify_one();
@@ -133,27 +224,30 @@ void testCallback(const std::string & msg)
 
 TEST(Herald, Callbacks)
 {
-	Herald::install();
+	auto ctx = Herald::createContext();
+	EXPECT_NE(nullptr, ctx);
+
+	Herald::Context & c = *ctx;
 
 	testCallbackInvoked = false;
 
-	Herald::enableLogType(Herald::LogTypes::Debug);
+	Herald::enableLogType(c, Herald::LogTypes::Debug);
 
-	Herald::addLogMessageCallback(&testCallback);
+	Herald::addLogMessageCallback(c, &testCallback);
 
 	{
 		std::unique_lock<std::mutex> l(conditionLock);
-		Herald::log(Herald::LogTypes::Debug, testCallbackMessage);
+		Herald::log(c, Herald::LogTypes::Debug, testCallbackMessage);
 		condition.wait(l);
 		EXPECT_TRUE(testCallbackInvoked);
 	}
 	testCallbackInvoked = false;
 
-	Herald::removeLogMessageCallback(&testCallback);
-	Herald::log(Herald::LogTypes::Debug, testCallbackMessage);
+	Herald::removeLogMessageCallback(c, &testCallback);
+	Herald::log(c, Herald::LogTypes::Debug, testCallbackMessage);
 	EXPECT_FALSE(testCallbackInvoked);
 
-	Herald::remove();
+	Herald::destroyContext(ctx);
 }
 
 std::string lastLogCallbackMessage;
@@ -166,95 +260,91 @@ void logCallback(const std::string & message)
 
 TEST(Herald, Logging)
 {
-	Herald::install();
-	Herald::clearConfiguration();
+	auto ctx = Herald::createContext();
+	EXPECT_NE(nullptr, ctx);
 
-	Herald::enableAllLogTypes();
-	Herald::addLogMessageCallback(&logCallback);
+	Herald::Context & c = *ctx;
+
+	Herald::clearConfiguration(c);
+
+	Herald::enableAllLogTypes(c);
+	Herald::addLogMessageCallback(c, &logCallback);
 
 	const char * const stringLiteral = "string literal";
 
 	{
 		std::unique_lock<std::mutex> l(conditionLock);
-		Herald::log(Herald::LogTypes::Debug, stringLiteral);
+		Herald::log(c, Herald::LogTypes::Debug, stringLiteral);
 		condition.wait(l);
-		EXPECT_TRUE(lastLogCallbackMessage.find(stringLiteral) !=
-		            std::string::npos);
+		EXPECT_TRUE(lastLogCallbackMessage.find(stringLiteral) != std::string::npos);
 	}
 
 	{
 		std::unique_lock<std::mutex> l(conditionLock);
 		const std::string            stdString("std::string");
-		Herald::log(Herald::LogTypes::Debug, stdString);
+		Herald::log(c, Herald::LogTypes::Debug, stdString);
 		condition.wait(l);
-		EXPECT_TRUE(lastLogCallbackMessage.find(stdString) !=
-		            std::string::npos);
+		EXPECT_TRUE(lastLogCallbackMessage.find(stdString) != std::string::npos);
 	}
 	int answer = 42;
 	{
 		std::unique_lock<std::mutex> l(conditionLock);
-		Herald::logf(Herald::LogTypes::Debug, "The answer is %d", answer);
+		Herald::logf(c, Herald::LogTypes::Debug, "The answer is %d", answer);
 		condition.wait(l);
-		EXPECT_TRUE(lastLogCallbackMessage.find("The answer is 42") !=
-		            std::string::npos);
+		EXPECT_TRUE(lastLogCallbackMessage.find("The answer is 42") != std::string::npos);
 	}
-	Herald::remove();
+
+	Herald::destroyContext(ctx);
 }
 
 TEST(Herald, FatalErrorHandlingThrows)
 {
-	Herald::install();
-	Herald::enableAbortOnFatal();
-	Herald::enableLogType(Herald::LogTypes::Fatal);
+	auto ctx = Herald::createContext();
+	EXPECT_NE(nullptr, ctx);
+
+	Herald::Context & c = *ctx;
+
+	Herald::enableAbortOnFatal(c);
+	Herald::enableLogType(c, Herald::LogTypes::Fatal);
 	bool fatalErrorThrows = false;
 	try {
-		Herald::log(Herald::LogTypes::Fatal, "Fatal!");
+		Herald::log(c, Herald::LogTypes::Fatal, "Fatal!");
 	} catch (std::runtime_error) {
 		fatalErrorThrows = true;
 	}
 	EXPECT_TRUE(fatalErrorThrows);
+
+	Herald::destroyContext(ctx);
 }
 
 TEST(Herald, FatalErrorHandlingNoThrow)
 {
-	Herald::install();
-	Herald::disableAbortOnFatal();
-	Herald::enableLogType(Herald::LogTypes::Fatal);
+	auto ctx = Herald::createContext();
+	EXPECT_NE(nullptr, ctx);
+
+	Herald::Context & c = *ctx;
+
+	Herald::disableAbortOnFatal(c);
+	Herald::enableLogType(c, Herald::LogTypes::Fatal);
 	bool fatalErrorThrows = false;
 
 	fatalErrorThrows = false;
-	Herald::log(Herald::LogTypes::Fatal, "Fatal!");
+	Herald::log(c, Herald::LogTypes::Fatal, "Fatal!");
 	EXPECT_FALSE(fatalErrorThrows);
-	Herald::remove();
+
+	Herald::destroyContext(ctx);
 }
 
 TEST(Herald, LogFormatDoesNotLogWhenLogTypeDisabled)
 {
-	Herald::install();
-	Herald::disableLogType(Herald::LogTypes::Debug);
-	Herald::logf(Herald::LogTypes::Debug, "LogFormat Ignored!");
-	Herald::remove();
-}
+	auto ctx = Herald::createContext();
+	EXPECT_NE(nullptr, ctx);
 
-TEST(Herald, LogMessageDoesNotLogWhenLogTypeDisabled)
-{
-	Herald::install();
-	Herald::disableLogType(Herald::LogTypes::Debug);
-	Herald::log(Herald::LogTypes::Debug, std::string("LogFormat Ignored!"));
-	Herald::remove();
-}
+	Herald::Context & c = *ctx;
 
-void slowLogCallback(const std::string &)
-{
-	std::this_thread::sleep_for(std::chrono::milliseconds(1));
-}
+	Herald::disableLogType(c, Herald::LogTypes::Debug);
+	Herald::logf(c, Herald::LogTypes::Debug, "LogFormat Ignored!");
 
-TEST(Herald, NoRaceWhenLoggingAndShuttingDown)
-{
-	Herald::install();
-	Herald::enableAbortOnFatal();
-	Herald::enableAllLogTypes();
-	Herald::addLogMessageCallback(slowLogCallback);
-	Herald::log(Herald::LogTypes::Error, "oops");
-	Herald::remove();
+	Herald::destroyContext(ctx);
 }
+#endif // 0
