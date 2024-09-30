@@ -1,4 +1,8 @@
 # Herald
+![Build Status](https://github.com/Justin-Randall/herald/actions/workflows/cmake-multi-platform.yml/badge.svg)
+
+[![codecov](https://codecov.io/github/Justin-Randall/herald/graph/badge.svg?token=4HYUF98OJ4)](https://codecov.io/github/Justin-Randall/herald)
+
 
 A multi-purpose C++ logging library.
 
