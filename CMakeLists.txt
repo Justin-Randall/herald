@@ -19,7 +19,7 @@ set(JSONCPP_DISABLE_TESTING true)
 include(FetchContent)
 FetchContent_Declare(
     rapidjsoncpp
-    GIT_REPOSITORY git@github.com:Justin-Randall/rapidjsoncpp.git
+    GIT_REPOSITORY https://github.com/Justin-Randall/rapidjsoncpp.git
     GIT_TAG origin/main
 )
 FetchContent_MakeAvailable(rapidjsoncpp)
