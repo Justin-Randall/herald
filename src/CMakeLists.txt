@@ -25,6 +25,13 @@ include_directories("${gtest_SOURCE_DIR}/include"
 # target_link_libraries(herald_library PRIVATE ...) # When RapidJSON or http clients are needed
 target_compile_features(herald_library PUBLIC cxx_std_17)
 
+# Set maximum warning levels and treat warnings as errors
+if(MSVC)
+    target_compile_options(herald_library PRIVATE /W4 /WX)
+else()
+    target_compile_options(herald_library PRIVATE -Wall -Wextra -pedantic -Werror)
+endif()
+
 source_group(
     TREE "${PROJECT_SOURCE_DIR}/include"
     PREFIX "Header Files"

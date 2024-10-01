@@ -15,9 +15,9 @@ namespace rapidjson
 		w.String(Herald::logTypeNames.at(value.logLevel).c_str());
 		w.Key("message");
 		w.String(value.message.c_str());
-		for (const auto & [key, value] : value.metadata) {
-			w.Key(key.c_str());
-			w.String(value.c_str());
+		for (const auto & [k, v] : value.metadata) {
+			w.Key(k.c_str());
+			w.String(v.c_str());
 		}
 		w.EndObject();
 	}

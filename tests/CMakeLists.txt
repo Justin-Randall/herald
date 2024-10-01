@@ -69,7 +69,7 @@ include_directories("${gtest_SOURCE_DIR}/include"
 )
 
 # Set up test command line options
-set(TEST_COMMAND_LINE_OPTIONS ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -R "^${UNIT_TEST}$" --output-on-failures)
+set(TEST_COMMAND_LINE_OPTIONS ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -R "^${UNIT_TEST}$")
 
 # Optionally find coverage tools
 find_program(OpenCppCoverage_BINARY OpenCppCoverage.exe)
