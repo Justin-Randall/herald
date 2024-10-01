@@ -10,7 +10,7 @@
 # Defaults to 100 since this template should
 # always have 100% coverage before committing to
 # source control.
-set(TEST_COVERAGE_THRESHOLD 99)
+set(TEST_COVERAGE_THRESHOLD 100)
 
 # End Configuration Variables
 # ###############################################
