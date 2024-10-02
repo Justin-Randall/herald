@@ -199,7 +199,7 @@ jobs:
             draft: false,
             prerelease: false,
           });
-          return { upload_url: release.data.upload_url }
+          core.setOutput("upload_url", release.data.upload_url)
 
     - name: Upload release asset
       env:
@@ -208,8 +208,22 @@ jobs:
         UPLOAD_URL="${{ steps.create_release.outputs.upload_url }}"
         FILE_PATH=$(find ./combined_package -type f -name '*.zip' | head -n 1)
         FILE_NAME=$(basename "$FILE_PATH")
+
+        if [ -z "$UPLOAD_URL" ]; then
+          echo "Error: UPLOAD_URL is empty."
+          exit 1
+        fi
+
+        if [ ! -f "$FILE_PATH" ]; then
+          echo "Error: File $FILE_PATH does not exist."
+          exit 1
+        fi
+
+        # Remove the {?name,label} part from the upload URL
+        UPLOAD_URL="${UPLOAD_URL/\{\?name,label\}/}?name=${FILE_NAME}"
+
         curl -X POST -H "Authorization: Bearer $GITHUB_TOKEN" \
               -H "Content-Type: application/zip" \
               --data-binary @"$FILE_PATH" \
-              "${UPLOAD_URL}?name=${FILE_NAME}"
+              "$UPLOAD_URL"
 # =================================================================================================
