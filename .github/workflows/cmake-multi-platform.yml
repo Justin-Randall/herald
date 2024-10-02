@@ -184,10 +184,10 @@ jobs:
     - name: Create Release
       uses: ncipollo/release-action@v1
       with:
-        name: Latest Release
+        name: Continuous Build
         tag: latest
         body: |
-          This is the latest release.
+          This is the latest continuous build from the main branch.
         allowUpdates: true
         artifacts: Herald.zip
 # =================================================================================================
