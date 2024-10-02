@@ -146,3 +146,66 @@ jobs:
       with:
         name: Herald
         path: combined_package/
+
+# =================================================================================================
+# Release job
+  release:
+    needs: package
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Download Combined Package Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: Herald
+        path: ./combined_package
+
+    - name: Delete existing 'latest' release
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const latestRelease = await github.rest.repos.getLatestRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo
+          }).catch(() => null);
+          if (latestRelease) {
+            await github.rest.repos.deleteRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: latestRelease.data.id
+            });
+            // Delete the tag associated with the release
+            await github.rest.git.deleteRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `tags/${latestRelease.data.tag_name}`
+            });
+          }
+
+    - name: Create or Update Latest Release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: 'latest'
+        release_name: 'Latest Release'
+        body: 'Automated latest release.'
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Upload release asset
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        UPLOAD_URL="${{ steps.create_release.outputs.upload_url }}"
+        FILE_PATH=$(find ./combined_package -type f -name '*.zip' | head -n 1)
+        FILE_NAME=$(basename "$FILE_PATH")
+        curl -X POST -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Content-Type: application/zip" \
+              --data-binary @"$FILE_PATH" \
+              "${UPLOAD_URL}?name=${FILE_NAME}"
+# =================================================================================================
