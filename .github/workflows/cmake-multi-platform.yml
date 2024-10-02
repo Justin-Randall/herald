@@ -78,7 +78,8 @@ jobs:
 
 
 
-
+# =================================================================================================
+# Test and coverage steps
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
@@ -97,7 +98,10 @@ jobs:
         files: ${{ steps.strings.outputs.build-output-dir }}/coverage/lcov.info
         flags: unittests
         name: codecov-umbrella
+# =================================================================================================
 
+# =================================================================================================
+# Collect artifacts for each platform and configuration
     - name: IntermediateArtifacts
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target package
   
@@ -119,7 +123,10 @@ jobs:
       with:
         name: platform-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
         path: ${{ steps.strings.outputs.build-output-dir }}/platform-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}.zip
-        
+# =================================================================================================
+
+# =================================================================================================
+# Combine artifacts into a single package
   package:
     needs: build
     runs-on: ubuntu-22.04
@@ -141,87 +148,21 @@ jobs:
         mkdir -p combined_package
         find ./platform_artifacts -type f -name '*.zip' -exec unzip -o {} -d combined_package \;
 
+    - name: Create Herald.zip
+      shell: bash
+      run: |
+        cd combined_package
+        zip -r ../Herald.zip .
+        cd ..
+
     - name: Upload Combined Package Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Herald
-        path: combined_package/
+        path: Herald.zip
+        #path: combined_package/
+# =================================================================================================
 
 # =================================================================================================
 # Release job
-  release:
-    needs: package
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download Combined Package Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: Herald
-          path: ./combined_package
-
-      - name: List downloaded artifacts for debugging
-        run: |
-          echo "Contents of combined_package:"
-          ls -R ./combined_package
-
-      - name: Delete existing 'latest' Release (if exists)
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const tag = 'latest';
-            try {
-              const release = await github.rest.repos.getReleaseByTag({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag
-              });
-              if (release) {
-                await github.rest.repos.deleteRelease({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  release_id: release.data.id
-                });
-                await github.rest.git.deleteRef({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  ref: `tags/${release.data.tag_name}`
-                });
-                console.log(`Deleted existing release and tag: ${tag}`);
-              }
-            } catch (error) {
-              if (error.status === 404) {
-                console.log(`Release with tag '${tag}' does not exist. Proceeding to create it.`);
-              } else {
-                throw error;
-              }
-            }
-
-      - name: Create 'latest' Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: latest
-          release_name: Latest Release
-          body: Automated latest release.
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Assets
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          for file in ./combined_package/*.zip; do
-            echo "Uploading $file..."
-            curl -X POST \
-              -H "Authorization: Bearer $GITHUB_TOKEN" \
-              -H "Content-Type: application/zip" \
-              --data-binary @"$file" \
-              "${{ steps.create_release.outputs.upload_url }}?name=$(basename $file)"
-          done
 # =================================================================================================
