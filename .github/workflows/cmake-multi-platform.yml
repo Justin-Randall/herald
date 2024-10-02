@@ -110,6 +110,13 @@ jobs:
       run: |
         Compress-Archive -Path "${{ steps.strings.outputs.build-output-dir }}\package\*" -DestinationPath "${{ steps.strings.outputs.build-output-dir }}\platform-${{ matrix.os }}-${{ matrix.c_compiler }}.zip"
 
+    - name: Upload Platform Artifacts
+      if: (runner.os == 'Linux' && matrix.cpp_compiler == 'clang++') || (runner.os == 'Windows' && matrix.c_compiler == 'cl')
+      uses: actions/upload-artifact@v3
+      with:
+        name: platform-${{ matrix.os }}-${{ matrix.c_compiler }}
+        path: ${{ steps.strings.outputs.build-output-dir }}/platform-${{ matrix.os }}-${{ matrix.c_compiler }}.zip
+  
   package:
     needs: build
     runs-on: ubuntu-22.04
