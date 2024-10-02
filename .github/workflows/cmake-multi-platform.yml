@@ -163,67 +163,22 @@ jobs:
         name: Herald
         path: ./combined_package
 
-    - name: Delete existing 'latest' release
-      uses: actions/github-script@v6
+    - name: Create or Update 'latest' Release
+      uses: softprops/action-gh-release@v1
       with:
-        script: |
-          const latestRelease = await github.rest.repos.getLatestRelease({
-            owner: context.repo.owner,
-            repo: context.repo.repo
-          }).catch(() => null);
-          if (latestRelease) {
-            await github.rest.repos.deleteRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: latestRelease.data.id
-            });
-            // Delete the tag associated with the release
-            await github.rest.git.deleteRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `tags/${latestRelease.data.tag_name}`
-            });
-          }
-
-    - name: Create new 'latest' release
-      id: create_release
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const release = await github.rest.repos.createRelease({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            tag_name: 'latest',
-            name: 'Latest Release',
-            body: 'Automated latest release.',
-            draft: false,
-            prerelease: false,
-          });
-          core.setOutput("upload_url", release.data.upload_url)
-
-    - name: Upload release asset
+        tag_name: latest
+        name: Latest Release
+        body: Automated latest release.
+        draft: false
+        prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        UPLOAD_URL="${{ steps.create_release.outputs.upload_url }}"
-        FILE_PATH=$(find ./combined_package -type f -name '*.zip' | head -n 1)
-        FILE_NAME=$(basename "$FILE_PATH")
 
-        if [ -z "$UPLOAD_URL" ]; then
-          echo "Error: UPLOAD_URL is empty."
-          exit 1
-        fi
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ./combined_package/*.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-        if [ ! -f "$FILE_PATH" ]; then
-          echo "Error: File $FILE_PATH does not exist."
-          exit 1
-        fi
-
-        # Remove the {?name,label} part from the upload URL
-        UPLOAD_URL="${UPLOAD_URL/\{\?name,label\}/}?name=${FILE_NAME}"
-
-        curl -X POST -H "Authorization: Bearer $GITHUB_TOKEN" \
-              -H "Content-Type: application/zip" \
-              --data-binary @"$FILE_PATH" \
-              "$UPLOAD_URL"
 # =================================================================================================
