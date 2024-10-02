@@ -101,7 +101,7 @@ jobs:
     - name: Archive Platform Artifacts (Linux)
       if: runner.os == 'Linux' && matrix.cpp_compiler == 'clang++'
       run: |
-        cd ${{ steps.strings.outputs.build-output-dir }}/package
+        cd ${{ steps.strings.outputs.build-output-dir }}
         zip -r platform-${{ matrix.os }}-${{ matrix.c_compiler }}.zip package
 
     - name: Archive Platform Artifacts (Windows)
