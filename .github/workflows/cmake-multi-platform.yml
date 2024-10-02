@@ -26,24 +26,27 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [ubuntu-24.04, windows-latest]
-        build_type: [Debug, Release]
-        c_compiler: [gcc, clang, cl]
+        #os: [ubuntu-24.04, windows-latest]
+        os: [ubuntu-24.04]
+        #build_type: [Debug, Release]
+        build_type: [Release]
+        #c_compiler: [gcc, clang, cl]
+        c_compiler: [clang]
         include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-          - os: ubuntu-24.04
-            c_compiler: gcc
-            cpp_compiler: g++
+          # - os: windows-latest
+          #   c_compiler: cl
+          #   cpp_compiler: cl
+          # - os: ubuntu-24.04
+          #   c_compiler: gcc
+          #   cpp_compiler: g++
           - os: ubuntu-24.04
             c_compiler: clang
             cpp_compiler: clang++
         exclude:
-          - os: windows-latest
-            c_compiler: gcc
-          - os: windows-latest
-            c_compiler: clang
+          # - os: windows-latest
+          #   c_compiler: gcc
+          # - os: windows-latest
+          #   c_compiler: clang
           - os: ubuntu-24.04
             c_compiler: cl
 
@@ -182,14 +185,33 @@ jobs:
         pwd
         ls -lR
 
-    # delete release "latest"
-    - name: Delete Release
-      id: delete_release
-      uses: actions/delete-release@v1
+    # delete release "latest", there is no actions/delete-release@v1, might need to use a different action
+    - name: Delete existing "latest" release if it exists
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: latest
+      run: |
+        # Install jq
+        sudo apt-get update
+        sudo apt-get install -y jq
+
+        # Fetch the release information for the tag 'latest'
+        RELEASE_INFO=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+          https://api.github.com/repos/${{ github.repository }}/releases/tags/latest)
+
+        # Extract the release ID
+        RELEASE_ID=$(echo "$RELEASE_INFO" | jq -r '.id')
+
+        if [ "$RELEASE_ID" != "null" ]; then
+          echo "Existing 'latest' release found with ID: $RELEASE_ID. Deleting..."
+          curl -s -X DELETE -H "Authorization: token $GITHUB_TOKEN" \
+            https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID
+          echo "Release deleted."
+        else
+          echo "No existing 'latest' release found. Skipping deletion."
+        fi
+
+
+
 
     # create a new "latest" release
     - name: Create Release
