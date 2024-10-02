@@ -136,9 +136,7 @@ jobs:
       shell: bash
       run: |
         mkdir -p combined_package
-        for artifact in ./platform_artifacts/*.zip; do
-          unzip -o "$artifact" -d combined_package
-        done
+        find ./platform_artifacts -type f -name '*.zip' -exec unzip -o {} -d combined_package \;
 
     - name: Create Combined Package Archive
       shell: bash
