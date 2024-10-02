@@ -101,8 +101,8 @@ jobs:
     - name: Archive Platform Artifacts (Linux)
       if: runner.os == 'Linux' && matrix.cpp_compiler == 'clang++'
       run: |
-        cd ${{ steps.strings.outputs.build-output-dir }}
-        zip -r platform-${{ matrix.os }}-${{ matrix.c_compiler }}.zip package
+        cd ${{ steps.strings.outputs.build-output-dir }}/package
+        zip -r ../platform-${{ matrix.os }}-${{ matrix.c_compiler }}.zip *
 
     - name: Archive Platform Artifacts (Windows)
       if: runner.os == 'Windows'
@@ -116,7 +116,7 @@ jobs:
       with:
         name: platform-${{ matrix.os }}-${{ matrix.c_compiler }}
         path: ${{ steps.strings.outputs.build-output-dir }}/platform-${{ matrix.os }}-${{ matrix.c_compiler }}.zip
-  
+        
   package:
     needs: build
     runs-on: ubuntu-22.04
@@ -137,12 +137,12 @@ jobs:
       run: |
         mkdir -p combined_package
         find ./platform_artifacts -type f -name '*.zip' -exec unzip -o {} -d combined_package \;
-
+      
     - name: Create Combined Package Archive
       shell: bash
       run: |
         cd combined_package
-        zip -r ../Herald-All-Platforms.zip ./*
+        zip -r ../Herald-All-Platforms.zip *
 
     - name: Upload Combined Package Artifact
       uses: actions/upload-artifact@v3
