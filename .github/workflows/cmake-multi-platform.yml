@@ -159,10 +159,65 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Herald
-        path: Herald.zip
-        #path: combined_package/
+        path: combined_package/
 # =================================================================================================
 
 # =================================================================================================
 # Release job
+  release:
+    needs: package
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download Combined Package Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: Herald
+
+    # Debug output showing workding directory and contents of the downloaded artifact
+    - name: Debug Download Results
+      run: |
+        pwd
+        ls -lR
+
+    # delete release "latest"
+    - name: Delete Release
+      uses: softprops/action-delete-release@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: latest
+
+    # create a new "latest" release
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: latest
+        release_name: Latest Release
+        body: |
+          This is the latest release.
+        draft: false
+        prerelease: false
+
+    # Zip Herald
+    - name: Zip Herald
+      run: |
+        cd Herald
+        zip -r ../Herald.zip .
+        ls -l ..
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./Herald.zip
+        asset_name: Herald.zip
+        asset_content_type: application/zip
+
 # =================================================================================================
