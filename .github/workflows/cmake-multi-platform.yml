@@ -142,7 +142,7 @@ jobs:
       shell: bash
       run: |
         cd combined_package
-        zip -r Herald-All-Platforms.zip combined_package/*
+        zip -r ../Herald-All-Platforms.zip ./*
 
     - name: Upload Combined Package Artifact
       uses: actions/upload-artifact@v3
