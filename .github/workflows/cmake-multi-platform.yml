@@ -26,7 +26,7 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [ubuntu-24.04, windows-latest]
+        os: [ubuntu-24.04, windows-latest, macos-latest]
         build_type: [Debug, Release]
         c_compiler: [gcc, clang, cl]
         include:
@@ -39,12 +39,19 @@ jobs:
           - os: ubuntu-24.04
             c_compiler: clang
             cpp_compiler: clang++
+          - os: macos-latest
+            c_compiler: clang
+            cpp_compiler: clang++
         exclude:
           - os: windows-latest
             c_compiler: gcc
           - os: windows-latest
             c_compiler: clang
           - os: ubuntu-24.04
+            c_compiler: cl
+          - os: macos-latest
+            c_compiler: gcc
+          - os: macos-latest
             c_compiler: cl
 
     steps:
@@ -103,9 +110,11 @@ jobs:
     - name: IntermediateArtifacts
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target package
   
-    - name: Archive Platform Artifacts (Linux)
-      if: runner.os == 'Linux' && matrix.cpp_compiler == 'clang++'
+    - name: Archive Platform Artifacts (Linux and MacOS)
+      if: runner.os == 'Linux' || runner.os == 'macos-latest' && matrix.cpp_compiler == 'clang++'
+      # if: runner.os == 'Linux' && matrix.cpp_compiler == 'clang++'
       run: |
+        echo "Archiving platform artifacts for ${{ matrix.os }} ${{ matrix.c_compiler }} ${{ matrix.build_type }}"
         cd ${{ steps.strings.outputs.build-output-dir }}/package
         zip -r ../platform-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}.zip *
 
@@ -181,34 +190,6 @@ jobs:
         zip -r ../Herald.zip .
     # =============================================================================================
 
-    # =============================================================================================
-    # Ensure the "latest" release tag is updated, delete and recreate
-    # - name: Delete existing "latest" release if it exists
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   run: |
-    #     # Install jq
-    #     sudo apt-get update
-    #     sudo apt-get install -y jq
-
-    #     # Fetch the release information for the tag 'latest'
-    #     RELEASE_INFO=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-    #       https://api.github.com/repos/${{ github.repository }}/releases/tags/latest)
-
-    #     # Extract the release ID
-    #     RELEASE_ID=$(echo "$RELEASE_INFO" | jq -r '.id')
-
-    #     if [ "$RELEASE_ID" != "null" ]; then
-    #       echo "Existing 'latest' release found with ID: $RELEASE_ID. Deleting..."
-    #       curl -s -X DELETE -H "Authorization: token $GITHUB_TOKEN" \
-    #         https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID
-    #       echo "Release deleted."
-    #     else
-    #       echo "No existing 'latest' release found. Skipping deletion."
-    #     fi
-
-      # actions/create-release is no longer supported
-      # use the ncipollo/release-action instead
     - name: Create Release
       uses: ncipollo/release-action@v1
       with:
@@ -218,28 +199,4 @@ jobs:
           This is the latest release.
         allowUpdates: true
         artifacts: Herald.zip
-
-    # - name: Create Release
-    #   id: create_release
-    #   uses: actions/create-release@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     tag_name: latest
-    #     release_name: Latest Release
-    #     body: |
-    #       This is the latest release.
-    #     draft: false
-    #     prerelease: false
-
-    # - name: Upload Release Asset
-    #   uses: actions/upload-release-asset@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-    #     asset_path: ./Herald.zip
-    #     asset_name: Herald.zip
-    #     asset_content_type: application/zip
-    # =============================================================================================
 # =================================================================================================
