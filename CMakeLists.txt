@@ -88,6 +88,9 @@ add_custom_target(package ALL
     # Copy the built library
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:herald_library> ${PACKAGE_DIR}/lib/${PLATFORM_NAME}/${ARCHITECTURE_NAME}/$<CONFIG>
 
+    # Invoke the packaging script with CONFIGURATION as a variable
+    COMMAND ${CMAKE_COMMAND} -D PACKAGE_DIR=${PACKAGE_DIR} -D PLATFORM_NAME=${PLATFORM_NAME} -D ARCHITECTURE_NAME=${ARCHITECTURE_NAME} -D CONFIGURATION=$<CONFIG> -P ${CMAKE_SOURCE_DIR}/package.cmake
+
     # Optional: Print a message for debugging
     COMMAND ${CMAKE_COMMAND} -E echo "Packaging for configuration: $<CONFIG>"
 )
