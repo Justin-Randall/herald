@@ -70,6 +70,8 @@ add_custom_target(clean-package
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${PACKAGE_TOPLEVEL_DIR}
 )
 
+# TODO : rapidjsoncpp does not have a proper install target setup, which conflicts with the package target.
+# Refactor rapidjsoncpp to have an install target, then remove this workaround.
 add_custom_target(package ALL
 
     # Create include directories
@@ -81,6 +83,12 @@ add_custom_target(package ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/include/Herald ${INCLUDE_DIR}/Herald
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${rapidjsoncpp_SOURCE_DIR}/include/rapidjsoncpp ${INCLUDE_DIR}/rapidjsoncpp
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${RapidJSON_SOURCE_DIR}/include/rapidjson ${INCLUDE_DIR}/rapidjson
+
+    # Copy LICENSE file
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/LICENSE ${PACKAGE_DIR}/LICENSE
+
+    # Copy README file
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/README.md ${PACKAGE_DIR}/README.md
 
     # Create library directory using generator expressions
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PACKAGE_DIR}/lib/${PLATFORM_NAME}/${ARCHITECTURE_NAME}/$<CONFIG>
