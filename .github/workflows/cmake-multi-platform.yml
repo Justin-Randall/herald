@@ -73,6 +73,9 @@ jobs:
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
+
+
+
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
@@ -91,3 +94,53 @@ jobs:
         files: ${{ steps.strings.outputs.build-output-dir }}/coverage/lcov.info
         flags: unittests
         name: codecov-umbrella
+
+    - name: IntermediateArtifacts
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target package
+  
+    - name: Archive Platform Artifacts (Linux)
+      if: runner.os == 'Linux' && matrix.cpp_compiler == 'clang++'
+      run: |
+        cd ${{ steps.strings.outputs.build-output-dir }}/package
+        zip -r platform-${{ matrix.os }}-${{ matrix.c_compiler }}.zip package
+
+    - name: Archive Platform Artifacts (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        Compress-Archive -Path "${{ steps.strings.outputs.build-output-dir }}\package\*" -DestinationPath "${{ steps.strings.outputs.build-output-dir }}\platform-${{ matrix.os }}-${{ matrix.c_compiler }}.zip"
+
+  package:
+    needs: build
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y zip unzip
+
+    - name: Download All Platform Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./platform_artifacts
+
+    - name: Unzip Platform Artifacts
+      shell: bash
+      run: |
+        mkdir -p combined_package
+        for artifact in ./platform_artifacts/*.zip; do
+          unzip -o "$artifact" -d combined_package
+        done
+
+    - name: Create Combined Package Archive
+      shell: bash
+      run: |
+        cd combined_package
+        zip -r Herald-All-Platforms.zip *
+
+    - name: Upload Combined Package Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Herald-All-Platforms
+        path: combined_package/Herald-All-Platforms.zip
