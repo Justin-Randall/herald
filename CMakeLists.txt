@@ -63,7 +63,7 @@ else()
 endif()
 
 set(PACKAGE_TOPLEVEL_DIR ${CMAKE_BINARY_DIR}/package)
-set(PACKAGE_DIR ${PACKAGE_TOPLEVEL_DIR}/Herald)
+set(PACKAGE_DIR ${PACKAGE_TOPLEVEL_DIR})
 set(INCLUDE_DIR ${PACKAGE_DIR}/include)
 
 add_custom_target(clean-package

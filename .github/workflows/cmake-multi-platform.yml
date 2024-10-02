@@ -141,15 +141,8 @@ jobs:
         mkdir -p combined_package
         find ./platform_artifacts -type f -name '*.zip' -exec unzip -o {} -d combined_package \;
 
-    # Remove the zip creation step
-    # - name: Create Combined Package Archive
-    #   shell: bash
-    #   run: |
-    #     cd combined_package
-    #     zip -r ../Herald-All-Platforms.zip *
-
     - name: Upload Combined Package Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Herald-All-Platforms
+        name: Herald
         path: combined_package/
