@@ -2,6 +2,9 @@
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
 name: CMake on multiple platforms
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [ "master" ]
@@ -137,15 +140,16 @@ jobs:
       run: |
         mkdir -p combined_package
         find ./platform_artifacts -type f -name '*.zip' -exec unzip -o {} -d combined_package \;
-      
-    - name: Create Combined Package Archive
-      shell: bash
-      run: |
-        cd combined_package
-        zip -r ../Herald-All-Platforms.zip *
+
+    # Remove the zip creation step
+    # - name: Create Combined Package Archive
+    #   shell: bash
+    #   run: |
+    #     cd combined_package
+    #     zip -r ../Herald-All-Platforms.zip *
 
     - name: Upload Combined Package Artifact
       uses: actions/upload-artifact@v3
       with:
         name: Herald-All-Platforms
-        path: Herald-All-Platforms.zip
+        path: combined_package/
