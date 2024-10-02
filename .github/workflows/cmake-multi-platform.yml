@@ -117,7 +117,7 @@ jobs:
       if: (runner.os == 'Linux' && matrix.cpp_compiler == 'clang++') || (runner.os == 'Windows' && matrix.c_compiler == 'cl')
       uses: actions/upload-artifact@v4
       with:
-        name: platform-${{ matrix.os }}-${{ matrix.c_compiler }}
+        name: platform-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
         path: ${{ steps.strings.outputs.build-output-dir }}/platform-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}.zip
         
   package:
