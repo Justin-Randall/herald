@@ -154,24 +154,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Download Combined Package Artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: Herald
-        path: ./combined_package
+      - name: Download Combined Package Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Herald
+          path: ./combined_package
 
-    - name: Create or Update 'latest' Release and Upload Assets
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: latest
-        name: Latest Release
-        body: Automated latest release.
-        draft: false
-        prerelease: false
-        files: ./combined_package/*.zip
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: List downloaded artifacts for debugging
+        run: |
+          echo "Contents of combined_package:"
+          ls -R ./combined_package
+
+      - name: Create or Update 'latest' Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: latest
+          release_name: Latest Release
+          body: Automated latest release.
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for file in ./combined_package/*.zip; do
+            echo "Uploading $file..."
+            curl -X POST \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Content-Type: application/zip" \
+              --data-binary @"$file" \
+              "${{ steps.create_release.outputs.upload_url }}?name=$(basename $file)"
+          done
 # =================================================================================================
