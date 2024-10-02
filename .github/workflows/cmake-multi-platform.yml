@@ -172,7 +172,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v4
+#    - uses: actions/checkout@v4
 
     - name: Download Combined Package Artifact
       uses: actions/download-artifact@v4
@@ -230,7 +230,11 @@ jobs:
     # Zip Herald
     - name: Zip Herald
       run: |
+        pwd
+        lwd -l
         cd Herald
+        pwd
+        ls -l
         zip -r ../Herald.zip .
         ls -l ..
 
