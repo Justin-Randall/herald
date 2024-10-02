@@ -168,7 +168,39 @@ jobs:
           echo "Contents of combined_package:"
           ls -R ./combined_package
 
-      - name: Create or Update 'latest' Release
+      - name: Delete existing 'latest' Release (if exists)
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const tag = 'latest';
+            try {
+              const release = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag
+              });
+              if (release) {
+                await github.rest.repos.deleteRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: release.data.id
+                });
+                await github.rest.git.deleteRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `tags/${release.data.tag_name}`
+                });
+                console.log(`Deleted existing release and tag: ${tag}`);
+              }
+            } catch (error) {
+              if (error.status === 404) {
+                console.log(`Release with tag '${tag}' does not exist. Proceeding to create it.`);
+              } else {
+                throw error;
+              }
+            }
+
+      - name: Create 'latest' Release
         id: create_release
         uses: actions/create-release@v1
         env:
