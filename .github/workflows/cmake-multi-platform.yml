@@ -185,18 +185,22 @@ jobs:
             });
           }
 
-    - name: Create or Update Latest Release
+    - name: Create new 'latest' release
       id: create_release
-      uses: actions/create-release@v1
+      uses: actions/github-script@v6
       with:
-        tag_name: 'latest'
-        release_name: 'Latest Release'
-        body: 'Automated latest release.'
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
+        script: |
+          const release = await github.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: 'latest',
+            name: 'Latest Release',
+            body: 'Automated latest release.',
+            draft: false,
+            prerelease: false,
+          });
+          return { upload_url: release.data.upload_url }
+
     - name: Upload release asset
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
