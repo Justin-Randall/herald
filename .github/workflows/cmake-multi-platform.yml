@@ -178,12 +178,24 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: Herald
+        path: ./Herald
 
     # Debug output showing workding directory and contents of the downloaded artifact
     - name: Debug Download Results
       run: |
         pwd
         ls -lR
+
+    # Zip Herald
+    - name: Zip Herald
+      run: |
+        pwd
+        ls -l
+        cd Herald
+        pwd
+        ls -l
+        zip -r ../Herald.zip .
+        ls -l ..
 
     # delete release "latest", there is no actions/delete-release@v1, might need to use a different action
     - name: Delete existing "latest" release if it exists
@@ -226,17 +238,6 @@ jobs:
           This is the latest release.
         draft: false
         prerelease: false
-
-    # Zip Herald
-    - name: Zip Herald
-      run: |
-        pwd
-        lwd -l
-        cd Herald
-        pwd
-        ls -l
-        zip -r ../Herald.zip .
-        ls -l ..
 
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
