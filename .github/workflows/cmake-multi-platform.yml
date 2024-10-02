@@ -163,7 +163,7 @@ jobs:
         name: Herald
         path: ./combined_package
 
-    - name: Create or Update 'latest' Release
+    - name: Create or Update 'latest' Release and Upload Assets
       uses: softprops/action-gh-release@v1
       with:
         tag_name: latest
@@ -171,14 +171,7 @@ jobs:
         body: Automated latest release.
         draft: false
         prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload Release Asset
-      uses: softprops/action-gh-release@v1
-      with:
         files: ./combined_package/*.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 # =================================================================================================
