@@ -184,10 +184,12 @@ jobs:
 
     # delete release "latest"
     - name: Delete Release
-      uses: softprops/action-delete-release@v1
+      id: delete_release
+      uses: actions/delete-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        tag: latest
+        tag_name: latest
 
     # create a new "latest" release
     - name: Create Release
