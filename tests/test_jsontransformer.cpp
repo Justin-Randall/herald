@@ -38,9 +38,10 @@ TEST(JsonTransformer, directLevelDisabledReturns)
 
 	auto levels = Herald::getEnabledLogLevels();
 	Herald::disableAllLogLevels();
-
+	const std::string key("key");
+	const std::string value("value");
 	// just a coverage test, no output expected
-	jsonTransformer->log(Herald::LogEntry(Herald::LogLevels::Analysis, "Analysis message"));
+	jsonTransformer->log(Herald::LogEntry(Herald::LogLevels::Analysis, "Analysis message", key, value));
 
 	Herald::setLogLevels(levels);
 }
