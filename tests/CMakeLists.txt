@@ -10,7 +10,12 @@
 # Defaults to 100 since this template should
 # always have 100% coverage before committing to
 # source control.
-set(TEST_COVERAGE_THRESHOLD 100)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(TEST_COVERAGE_THRESHOLD 100)
+else()
+  # Optimized builds do not report coverage against source that is optimzed away
+  set(TEST_COVERAGE_THRESHOLD 95)
+endif()
 
 # End Configuration Variables
 # ###############################################
@@ -95,8 +100,7 @@ if(OpenCppCoverage_BINARY)
   add_custom_command(
     TARGET coverage
 
-    # string(REPLACE "/" "\\" OPEN_CPP_COVERAGE_SOURCE_DIR ${CMAKE_SOURCE_DIR})
-    COMMAND ${OpenCppCoverage_BINARY} --quiet --export_type cobertura:${CMAKE_SOURCE_DIR}/build/coverage.xml --cover_children --sources ${OPEN_CPP_COVERAGE_SOURCE_DIR} --excluded_modules system32 --excluded_sources build\\_deps --excluded_sources googletest\\include\\gtest -- ${TEST_COMMAND_LINE_OPTIONS}
+    COMMAND ${OpenCppCoverage_BINARY} --quiet --export_type cobertura:${CMAKE_SOURCE_DIR}/build/coverage.xml --cover_children --sources ${OPEN_CPP_COVERAGE_SOURCE_DIR} --excluded_modules system32 --excluded_sources build\\_deps --excluded_line_regex="^.*// LCOV_EXCL_LINE.*" --excluded_sources googletest\\include\\gtest -- ${TEST_COMMAND_LINE_OPTIONS}
     COMMENT "Run OpenCppCoverage"
   )
 

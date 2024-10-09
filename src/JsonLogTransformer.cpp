@@ -1,3 +1,6 @@
+// Copyright 2016-2024 Playscale Ptd Ltd and Justin Randall
+// MIT License, see LICENSE file for full details.
+
 #include "Herald/BaseLogTransformer.hpp"
 #include "Herald/BaseLogTransformerBuilder.hpp"
 #include "Herald/GetTimeStamp.hpp"
@@ -29,7 +32,7 @@ namespace Herald
 	{
 	  public:
 		JsonLogTransformer()           = default;
-		~JsonLogTransformer() override = default;
+		~JsonLogTransformer() override = default; // LCOV_EXCL_LINE
 
 		virtual void log(const LogEntry & entry) override
 		{

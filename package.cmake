@@ -1,4 +1,5 @@
-# package.cmake
+# Copyright 2016-2024 Playscale Ptd Ltd and Justin Randall
+# MIT License, see LICENSE file for full details.
 
 # Ensure that all required variables are set
 if(NOT DEFINED PACKAGE_DIR)
