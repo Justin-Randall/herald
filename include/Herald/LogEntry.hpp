@@ -28,7 +28,7 @@ namespace Herald
 		{
 		}
 
-		/// @brief Variadict constructor for structured logging
+		/// @brief Variadic constructor for structured logging
 		/// @tparam ...Args Must be pairs of KeyType, ValueType, KeyType, ValueType, ...
 		/// @param logLevel log level for the message (Analysis, Trace, Debug, Info, Warning, Error, Fatal)
 		/// @param message
