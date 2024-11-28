@@ -2,9 +2,9 @@
 // MIT License, see LICENSE file for full details.
 
 #include "Herald/BaseLogTransformer.hpp"
-#include "Herald/BaseLogTransformerBuilder.hpp"
 #include "Herald/GetTimeStamp.hpp"
 #include "Herald/JsonLogTransformerFactory.hpp"
+#include "Herald/TransformerBuilder.hpp"
 #include "rapidjsoncpp/to_json.hpp"
 #include "rapidjsoncpp/to_json_map.hpp"
 
@@ -64,15 +64,5 @@ namespace Herald
 		}
 	};
 
-	class JsonLogTransformerBuilder : public BaseLogTransformerBuilder
-	{
-		virtual ILogTransformerPtr build() override
-		{
-			auto logger = std::make_shared<JsonLogTransformer>();
-			applyBuildConfigurations(logger);
-			return logger;
-		}
-	};
-
-	ILogTransformerBuilderPtr createJsonLogTransformerBuilder() { return std::make_unique<JsonLogTransformerBuilder>(); }
+	ILogTransformerBuilderPtr createJsonLogTransformerBuilder() { return std::make_unique<TransformerBuilder<JsonLogTransformer>>(); }
 } // namespace Herald

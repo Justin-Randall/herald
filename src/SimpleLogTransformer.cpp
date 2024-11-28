@@ -2,10 +2,10 @@
 // MIT License, see LICENSE file for full details.
 
 #include "Herald/BaseLogTransformer.hpp"
-#include "Herald/BaseLogTransformerBuilder.hpp"
 #include "Herald/ILogWriter.hpp"
 #include "Herald/Logger.hpp"
 #include "Herald/SimpleLogTransformerFactory.hpp"
+#include "Herald/TransformerBuilder.hpp"
 #include <algorithm>
 #include <functional>
 #include <iostream>
@@ -49,19 +49,6 @@ namespace Herald
 		}
 	};
 
-	class LogTransformerBuilder : public BaseLogTransformerBuilder
-	{
-	  public:
-		LogTransformerBuilder()           = default;
-		~LogTransformerBuilder() override = default;
-		ILogTransformerPtr build() override
-		{
-			auto logger = std::make_shared<LogTransformer>();
-			applyBuildConfigurations(logger);
-			return logger;
-		}
-	};
-
 	// Factory function that returns an opaque ILogTransformerBuilderBase pointer
-	ILogTransformerBuilderPtr createSimpleLogTransformerBuilder() { return std::make_unique<LogTransformerBuilder>(); }
+	ILogTransformerBuilderPtr createSimpleLogTransformerBuilder() { return std::make_unique<TransformerBuilder<LogTransformer>>(); }
 } // namespace Herald
