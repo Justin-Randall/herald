@@ -45,3 +45,27 @@ TEST(JsonTransformer, directLevelDisabledReturns)
 
 	Herald::setLogLevels(levels);
 }
+
+TEST(JsonTransformer, eventLog)
+{
+	auto jsonTransformerBuilder = Herald::createJsonLogTransformerBuilder();
+	auto jsonTransformer = jsonTransformerBuilder->attachLogWriterCallback([](const std::string & msg) { std::cerr << msg << std::endl; })
+	                           .addHeader("userId", "test user")
+	                           .addHeader("hostName", "test machine")
+	                           .build();
+
+	testing::internal::CaptureStderr();
+
+	Herald::event(*jsonTransformer, "Event message");
+
+	// expecting well formed json in the output
+	std::string output = testing::internal::GetCapturedStderr();
+
+	// expecting a json object with a log level and message
+	EXPECT_TRUE(output.find("{") != std::string::npos);
+	EXPECT_TRUE(output.find("}") != std::string::npos);
+	EXPECT_TRUE(output.find("\"level\": \"Event\"") != std::string::npos);
+	EXPECT_TRUE(output.find("\"event\": \"Event message\"") != std::string::npos);
+	EXPECT_TRUE(output.find("\"userId\": \"test user\"") != std::string::npos);
+	EXPECT_TRUE(output.find("\"hostName\": \"test machine\"") != std::string::npos);
+}

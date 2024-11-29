@@ -23,9 +23,6 @@ namespace Herald
 
 		virtual void log(const LogEntry & entry) override
 		{
-			if (!isLogLevelEnabled(entry.logLevel))
-				return;
-
 			std::stringstream ss;
 
 			// inject the headers

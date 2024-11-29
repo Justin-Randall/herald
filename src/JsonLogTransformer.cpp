@@ -4,6 +4,7 @@
 #include "Herald/BaseLogTransformer.hpp"
 #include "Herald/GetTimeStamp.hpp"
 #include "Herald/JsonLogTransformerFactory.hpp"
+#include "Herald/LogLevels.hpp"
 #include "Herald/TransformerBuilder.hpp"
 #include "rapidjsoncpp/to_json.hpp"
 #include "rapidjsoncpp/to_json_map.hpp"
@@ -16,8 +17,14 @@ namespace rapidjson
 		w.StartObject();
 		w.Key("level");
 		w.String(Herald::logTypeNames.at(value.logLevel).c_str());
-		w.Key("message");
+
+		if (value.logLevel == Herald::LogLevels::Event) {
+			w.Key("event");
+		} else {
+			w.Key("message");
+		}
 		w.String(value.message.c_str());
+
 		for (const auto & [k, v] : value.metadata) {
 			w.Key(k.c_str());
 			w.String(v.c_str());
@@ -36,8 +43,8 @@ namespace Herald
 
 		virtual void log(const LogEntry & entry) override
 		{
-			if (!isLogLevelEnabled(entry.logLevel))
-				return;
+			// if (!isLogLevelEnabled(entry.logLevel))
+			// 	return;
 
 			// use json to log the message
 			const std::string timeStamp = getTimeStamp();

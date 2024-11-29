@@ -118,6 +118,10 @@ TEST(Herald, LogLevels)
 	Herald::enableLogLevel(Herald::LogLevels::Fatal);
 	Herald::log(logTransformer, Herald::LogLevels::Fatal, "Fatal message");
 	EXPECT_EQ(logTransformer.logString, "Fatal message");
+
+	// lastly, an event, which SHOULD show up
+	Herald::event(logTransformer, "Event message");
+	EXPECT_EQ(logTransformer.logString, "Event message");
 }
 
 #if 0
