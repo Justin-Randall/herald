@@ -34,6 +34,7 @@ set(UNIT_TEST ${PROJECT_NAME}_tests)
 add_executable(${UNIT_TEST}
 
   "test_herald.cpp"
+  "test_timestamps.cpp"
   "test_ilogtransformer.cpp"
   "test_ilogwriter.cpp"
   "test_jsontransformer.cpp"
